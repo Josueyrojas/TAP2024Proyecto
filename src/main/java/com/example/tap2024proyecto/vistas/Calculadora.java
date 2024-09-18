@@ -20,8 +20,8 @@ public class Calculadora extends Stage {
 
     private String operador = "";
     private double operando1 = 0;
-    private boolean nuevoOperando = true; // Para controlar cuando se introduce un nuevo número
-    private boolean calculoEnCadena = false; // Indica si estamos encadenando operaciones
+    private boolean nuevoOperando = true;
+    private boolean calculoEnCadena = false;
 
     private void CrearUI(){
         arBtns = new Button[4][4];
@@ -59,21 +59,21 @@ public class Calculadora extends Stage {
     }
 
     private void detectarTecla(String tecla){
-        if (tecla.matches("[0-9\\.]")) { // Si es un número o punto
+        if (tecla.matches("[0-9\\.]")) {
             if (nuevoOperando) {
                 txtPantalla.setText(tecla);
                 nuevoOperando = false;
             } else {
                 txtPantalla.appendText(tecla);
             }
-            calculoEnCadena = false; // Se ha introducido un nuevo número, no estamos encadenando
-        } else if (tecla.matches("[\\+\\-\\*/]")) { // Si es un operador
-            if (!calculoEnCadena) { // Si no estamos encadenando, guardar el operando1
+            calculoEnCadena = false;
+        } else if (tecla.matches("[\\+\\-\\*/]")) {
+            if (!calculoEnCadena) {
                 operando1 = Double.parseDouble(txtPantalla.getText());
             }
             operador = tecla;
             nuevoOperando = true;
-        } else if (tecla.equals("=")) { // Si es el igual, realizar cálculo
+        } else if (tecla.equals("=")) {
             realizarOperacion();
         }
     }
@@ -116,9 +116,9 @@ public class Calculadora extends Stage {
 
         if (!error) {
             txtPantalla.setText(String.valueOf(resultado));
-            operando1 = resultado; // Guardar el resultado como el nuevo operando1
-            nuevoOperando = true; // Preparar para el próximo operando
-            calculoEnCadena = true; // Marcar que estamos encadenando operaciones
+            operando1 = resultado;
+            nuevoOperando = true;
+            calculoEnCadena = true;
         }
     }
 
@@ -127,6 +127,6 @@ public class Calculadora extends Stage {
         operador = "";
         operando1 = 0;
         nuevoOperando = true;
-        calculoEnCadena = false; // Reiniciar el encadenamiento
+        calculoEnCadena = false;
     }
 }

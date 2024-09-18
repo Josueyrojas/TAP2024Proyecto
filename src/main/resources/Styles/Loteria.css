@@ -1,4 +1,9 @@
 .root{
-    -fx-background-image: url("https://static.vecteezy.com/system/resources/previews/007/062/175/non_2x/cinco-de-mayo-background-free-vector.jpg");
-    -fx-background-repeat: stretch;
+    -fx-background-image: url("/images/wallpaperLoteria.jpg");
+    /*-fx-background-repeat: stretch;*/
+}
+.carta-marcador {
+    -fx-text-fill: black;
+    -fx-font-size: 60px;
+    -fx-font-weight: bold;
 }
