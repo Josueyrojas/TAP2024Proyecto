@@ -8,6 +8,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import static java.lang.Double.parseDouble;
+
 public class Calculadora extends Stage {
 
     private Button[][] arBtns;
@@ -69,7 +71,7 @@ public class Calculadora extends Stage {
             calculoEnCadena = false;
         } else if (tecla.matches("[\\+\\-\\*/]")) {
             if (!calculoEnCadena) {
-                operando1 = Double.parseDouble(txtPantalla.getText());
+                operando1 = parseDouble(txtPantalla.getText());
             }
             operador = tecla;
             nuevoOperando = true;
@@ -81,7 +83,7 @@ public class Calculadora extends Stage {
     private void realizarOperacion() {
         double operando2;
         try {
-            operando2 = Double.parseDouble(txtPantalla.getText());
+            operando2 = parseDouble(txtPantalla.getText());
         } catch (NumberFormatException e) {
             txtPantalla.setText("Error: Entrada inválida");
             return;

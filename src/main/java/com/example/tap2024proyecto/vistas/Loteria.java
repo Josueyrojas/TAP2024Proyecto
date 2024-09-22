@@ -34,14 +34,14 @@ public class Loteria extends Stage {
     private Scene escena;
     private String[] arImages = {"1.jpg","2.jpg","3.jpg","4.jpg","5.jpg","6.jpg","7.jpg","8.jpg","9.jpg","10.jpg","11.jpg","12.jpg","13.jpg","14.jpg","15.jpg","16.jpg","17.jpg","18.jpg","19.jpg","20.jpg","21.jpg","22.jpg","23.jpg","24.jpg","25.jpg","26.jpg","27.jpg","28.jpg","29.jpg","30.jpg","31.jpg","32.jpg","33.jpg","34.jpg","35.jpg","36.jpg","37.jpg","38.jpg","39.jpg","40.jpg","41.jpg","42.jpg","43.jpg","44.jpg","45.jpg","46.jpg","47.jpg","48.jpg","49.jpg","50.jpg","51.jpg","52.jpg","53.jpg","54.jpg"};
     private Button[][] arBtnTab;
-    private Timer timer;
+    private Timer timerGeneral, timerMazo;
     private int plantillaActual = 0;
     private List<Button[][]> plantillas;
-    private int tiempoRestante = 5; // Tiempo en segundos para cada carta
-    private TimerTask timerTask;
+    private TimerTask timerTaskGeneral, timerTaskMazo;
     private List<String> cartasDisponibles;
     private List<String> cartasMazo;
     private boolean juegoIniciado = false; // Estado del juego
+    private int segundosTotales = 0; // Contador de tiempo total en segundos
 
     private Panel pnlPrincipal;
 
@@ -190,33 +190,53 @@ public class Loteria extends Stage {
 
     // Nueva función para marcar la carta si coincide con la del mazo
     private void marcarCarta(StackPane stackPane, Label lblMarcador, String cartaDeLaPlantilla) {
-        String imagenActualMazoNombre = imvMazo.getImage().getUrl().substring(imvMazo.getImage().getUrl().lastIndexOf('/') + 1);
+        String imagenActualMazoNombre = imvMazo.getImage().getUrl().substring(imvMazo.getImage().getUrl().lastIndexOf("/") + 1);
 
         if (cartaDeLaPlantilla.equals(imagenActualMazoNombre)) {
             lblMarcador.setVisible(true); // Mostrar "X" si coincide
             ((Button) stackPane.getParent().getParent()).setDisable(true); // Desactivar el botón para evitar más clics
+            verificarVictoria(); // Verificar si se ha ganado
         }
     }
 
     // Temporizador que controla el cambio de cartas en el mazo
     private void iniciarJuego() {
-        if (timer != null) {
-            timer.cancel();
+        if (timerGeneral != null) {
+            timerGeneral.cancel();
         }
+        if (timerMazo != null) {
+            timerMazo.cancel();
+        }
+
         cartasMazo = new ArrayList<>(cartasDisponibles); // Inicializa el mazo de cartas disponibles
         Collections.shuffle(cartasMazo); // Baraja las cartas del mazo
-        timer = new Timer();
-        timerTask = new TimerTask() {
+
+        // Temporizador para el tiempo total del juego
+        timerGeneral = new Timer();
+        timerTaskGeneral = new TimerTask() {
+            @Override
+            public void run() {
+                Platform.runLater(() -> {
+                    segundosTotales++;
+                    int minutos = segundosTotales / 60;
+                    int segundos = segundosTotales % 60;
+                    lblTimer.setText(String.format("%02d:%02d", minutos, segundos));
+                });
+            }
+        };
+        timerGeneral.scheduleAtFixedRate(timerTaskGeneral, 0, 1000); // Actualiza cada segundo
+
+        // Temporizador para el cambio de cartas del mazo
+        timerMazo = new Timer();
+        timerTaskMazo = new TimerTask() {
             @Override
             public void run() {
                 Platform.runLater(() -> {
                     siguienteCarta();
-                    tiempoRestante = 5; // Reinicia el tiempo para la siguiente carta
                 });
             }
         };
-
-        timer.scheduleAtFixedRate(timerTask, 0, 5000); // Cambiar cada 5 segundos
+        timerMazo.scheduleAtFixedRate(timerTaskMazo, 0, 5000); // Cambiar cada 5 segundos
     }
 
     // Muestra la siguiente carta del mazo
@@ -225,7 +245,6 @@ public class Loteria extends Stage {
             int cartaIndex = new Random().nextInt(cartasMazo.size()); // Selecciona una carta aleatoria del mazo
             String cartaActual = cartasMazo.remove(cartaIndex); // Elimina la carta del mazo
             imvMazo.setImage(new Image(getClass().getResource("/images/" + cartaActual).toString()));
-            lblTimer.setText(String.format("00:0%d", tiempoRestante)); // Actualiza el temporizador
         } else {
             // Si no quedan cartas, mostrar un mensaje
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -237,16 +256,25 @@ public class Loteria extends Stage {
         }
     }
 
-    // Finaliza el juego
+    // Finaliza el juego y detiene el temporizador
     private void finalizarJuego() {
-        if (timer != null) {
-            timer.cancel();
+        if (timerGeneral != null) {
+            timerGeneral.cancel();
         }
-        btnIniciar.setDisable(false); // Habilitar el botón de iniciar juego
-        btnFinalizar.setDisable(true); // Desactivar el botón de finalizar juego
-        btnAnterior.setDisable(false); // Habilitar el botón de cambiar plantilla
-        btnSiguiente.setDisable(false); // Habilitar el botón de cambiar plantilla
-        juegoIniciado = false; // Restablecer el estado del juego
+        if (timerMazo != null) {
+            timerMazo.cancel();
+        }
+        juegoIniciado = false;
+        btnIniciar.setDisable(false); // Habilitar el botón de iniciar para un nuevo juego
+        btnFinalizar.setDisable(true); // Desactivar el botón de finalizar
+        btnAnterior.setDisable(false); // Permitir cambiar de plantilla de nuevo
+        btnSiguiente.setDisable(false);
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Juego Finalizado");
+        alert.setHeaderText("El juego ha terminado");
+        alert.setContentText("Tiempo total jugado: " + lblTimer.getText());
+        alert.showAndWait();
     }
 
     // Verificar si el jugador ha ganado (todas las cartas marcadas)
@@ -255,11 +283,14 @@ public class Loteria extends Stage {
         Button[][] plantilla = plantillas.get(plantillaActual);
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                if (!arBtnTab[j][i].getStyle().contains("green")) {
+                StackPane stackPane = (StackPane) ((Button) gdpTablilla.getChildren().get(i * 4 + j)).getGraphic();
+                Label lblMarcador = (Label) stackPane.getChildren().get(1); // Obtener el marcador "X"
+                if (!lblMarcador.isVisible()) {
                     haGanado = false;
                     break;
                 }
             }
+            if (!haGanado) break;
         }
 
         if (haGanado) {
@@ -268,6 +299,7 @@ public class Loteria extends Stage {
             alert.setHeaderText(null);
             alert.setContentText("¡Has ganado el juego!");
             alert.showAndWait();
+            finalizarJuego(); // Terminar el juego si se ha ganado
         }
     }
 }
