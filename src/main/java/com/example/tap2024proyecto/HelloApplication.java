@@ -1,5 +1,6 @@
 package com.example.tap2024proyecto;
 
+import com.example.tap2024proyecto.models.Conexion;
 import com.example.tap2024proyecto.vistas.Calculadora;
 import com.example.tap2024proyecto.vistas.Loteria;
 import javafx.application.Application;
@@ -46,6 +47,8 @@ public class HelloApplication extends Application {
         stage.setScene(scene);
         stage.setMaximized(true);
         stage.show();
+
+        Conexion.CrearConexion();
     }
 
 

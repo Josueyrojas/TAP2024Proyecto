@@ -40,8 +40,8 @@ public class Loteria extends Stage {
     private TimerTask timerTaskGeneral, timerTaskMazo;
     private List<String> cartasDisponibles;
     private List<String> cartasMazo;
-    private boolean juegoIniciado = false; // Estado del juego
-    private int segundosTotales = 0; // Contador de tiempo total en segundos
+    private boolean juegoIniciado = false;
+    private int segundosTotales = 0;
 
     private Panel pnlPrincipal;
 
@@ -62,7 +62,7 @@ public class Loteria extends Stage {
         imvSig.setFitHeight(50);
 
         gdpTablilla = new GridPane();
-        CrearPlantillas();  // Modificación aquí para crear varias plantillas
+        CrearPlantillas();
 
         btnAnterior = new Button();
         btnAnterior.setGraphic(imvAnt);
@@ -75,7 +75,7 @@ public class Loteria extends Stage {
 
         btnFinalizar = new Button("Finalizar Juego");
         btnFinalizar.getStyleClass().setAll("btn-sm", "btn-warning");
-        btnFinalizar.setDisable(true); // Deshabilitar al inicio
+        btnFinalizar.setDisable(true);
 
         hBoxButtons = new HBox(btnAnterior, btnSiguiente, btnIniciar, btnFinalizar);
         vbxTablilla = new VBox(gdpTablilla, hBoxButtons);
@@ -92,7 +92,7 @@ public class Loteria extends Stage {
         escena.getStylesheets().add(BootstrapFX.bootstrapFXStylesheet());
         escena.getStylesheets().add(getClass().getResource("/styles/loteria.css").toExternalForm());
 
-        // Funcionalidad botones
+
         btnAnterior.setOnAction(e -> {
             if (!juegoIniciado) {
                 plantillaActual = (plantillaActual == 0) ? plantillas.size() - 1 : plantillaActual - 1;
@@ -109,11 +109,11 @@ public class Loteria extends Stage {
 
         btnIniciar.setOnAction(e -> {
             iniciarJuego();
-            btnIniciar.setDisable(true); // Desactivar el botón de iniciar
-            btnFinalizar.setDisable(false); // Habilitar el botón de finalizar
-            btnAnterior.setDisable(true); // Desactivar el botón de cambiar plantilla
-            btnSiguiente.setDisable(true); // Desactivar el botón de cambiar plantilla
-            juegoIniciado = true; // Cambiar el estado del juego
+            btnIniciar.setDisable(true);
+            btnFinalizar.setDisable(false);
+            btnAnterior.setDisable(true);
+            btnSiguiente.setDisable(true);
+            juegoIniciado = true;
         });
 
         btnFinalizar.setOnAction(e -> finalizarJuego());
@@ -128,21 +128,20 @@ public class Loteria extends Stage {
         vbxMazo.setSpacing(10);
     }
 
-    // Modificación: Crea varias plantillas y las almacena en una lista
     private void CrearPlantillas() {
         plantillas = new ArrayList<>();
-        cartasDisponibles = new ArrayList<>(List.of(arImages)); // Lista con todas las cartas disponibles
+        cartasDisponibles = new ArrayList<>(List.of(arImages));
 
-        for (int p = 0; p < 5; p++) { // Genera 5 plantillas
+        for (int p = 0; p < 5; p++) {
             arBtnTab = new Button[4][4];
-            List<String> cartasRevueltas = new ArrayList<>(cartasDisponibles); // Crea una copia de la lista de cartas
-            Collections.shuffle(cartasRevueltas); // Revuélvela
+            List<String> cartasRevueltas = new ArrayList<>(cartasDisponibles);
+            Collections.shuffle(cartasRevueltas);
 
-            GridPane gridPane = new GridPane(); // Nueva tablilla por plantilla
+            GridPane gridPane = new GridPane();
 
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 4; j++) {
-                    String carta = cartasRevueltas.get(i * 4 + j); // Toma una carta revuelta
+                    String carta = cartasRevueltas.get(i * 4 + j);
                     Image img = new Image(getClass().getResource("/images/" + carta).toString());
                     ImageView imv = new ImageView(img);
                     imv.setFitWidth(70);
@@ -151,33 +150,31 @@ public class Loteria extends Stage {
                     StackPane stackPane = new StackPane();
                     stackPane.getChildren().add(imv);
 
-                    // Crear el label con "X" para marcar
                     Label lblMarcador = new Label("X");
-                    lblMarcador.getStyleClass().add("carta-marcador"); // Clase CSS para estilo del marcador
-                    lblMarcador.setVisible(false); // Ocultar inicialmente
+                    lblMarcador.getStyleClass().add("carta-marcador");
+                    lblMarcador.setVisible(false);
                     stackPane.getChildren().add(lblMarcador);
 
                     arBtnTab[j][i] = new Button();
                     arBtnTab[j][i].setGraphic(stackPane);
                     gridPane.add(arBtnTab[j][i], j, i);
 
-                    // Marcar carta si coincide con el mazo
+
                     int finalI = i, finalJ = j;
-                    String finalCarta = carta;  // Guardar la referencia de la carta
+                    String finalCarta = carta;
                     arBtnTab[j][i].setOnAction(e -> {
                         if (juegoIniciado) {
-                            marcarCarta(stackPane, lblMarcador, finalCarta);  // Llamada a la nueva función marcarCarta
+                            marcarCarta(stackPane, lblMarcador, finalCarta);
                         }
                     });
                 }
             }
-            plantillas.add(arBtnTab); // Añade la plantilla generada
+            plantillas.add(arBtnTab);
         }
 
-        mostrarPlantilla(0); // Muestra la primera plantilla por defecto
+        mostrarPlantilla(0);
     }
 
-    // Mostrar la plantilla actual en el GridPane
     private void mostrarPlantilla(int index) {
         gdpTablilla.getChildren().clear();
         Button[][] plantilla = plantillas.get(index);
@@ -188,18 +185,16 @@ public class Loteria extends Stage {
         }
     }
 
-    // Nueva función para marcar la carta si coincide con la del mazo
     private void marcarCarta(StackPane stackPane, Label lblMarcador, String cartaDeLaPlantilla) {
         String imagenActualMazoNombre = imvMazo.getImage().getUrl().substring(imvMazo.getImage().getUrl().lastIndexOf("/") + 1);
 
         if (cartaDeLaPlantilla.equals(imagenActualMazoNombre)) {
-            lblMarcador.setVisible(true); // Mostrar "X" si coincide
-            ((Button) stackPane.getParent().getParent()).setDisable(true); // Desactivar el botón para evitar más clics
-            verificarVictoria(); // Verificar si se ha ganado
+            lblMarcador.setVisible(true);
+            ((Button) stackPane.getParent().getParent()).setDisable(true);
+            verificarVictoria();
         }
     }
 
-    // Temporizador que controla el cambio de cartas en el mazo
     private void iniciarJuego() {
         if (timerGeneral != null) {
             timerGeneral.cancel();
@@ -208,10 +203,10 @@ public class Loteria extends Stage {
             timerMazo.cancel();
         }
 
-        cartasMazo = new ArrayList<>(cartasDisponibles); // Inicializa el mazo de cartas disponibles
-        Collections.shuffle(cartasMazo); // Baraja las cartas del mazo
+        cartasMazo = new ArrayList<>(cartasDisponibles);
+        Collections.shuffle(cartasMazo);
 
-        // Temporizador para el tiempo total del juego
+
         timerGeneral = new Timer();
         timerTaskGeneral = new TimerTask() {
             @Override
@@ -224,9 +219,9 @@ public class Loteria extends Stage {
                 });
             }
         };
-        timerGeneral.scheduleAtFixedRate(timerTaskGeneral, 0, 1000); // Actualiza cada segundo
+        timerGeneral.scheduleAtFixedRate(timerTaskGeneral, 0, 1000);
 
-        // Temporizador para el cambio de cartas del mazo
+
         timerMazo = new Timer();
         timerTaskMazo = new TimerTask() {
             @Override
@@ -236,27 +231,26 @@ public class Loteria extends Stage {
                 });
             }
         };
-        timerMazo.scheduleAtFixedRate(timerTaskMazo, 0, 5000); // Cambiar cada 5 segundos
+        timerMazo.scheduleAtFixedRate(timerTaskMazo, 0, 5000);
     }
 
-    // Muestra la siguiente carta del mazo
+
     private void siguienteCarta() {
         if (!cartasMazo.isEmpty()) {
-            int cartaIndex = new Random().nextInt(cartasMazo.size()); // Selecciona una carta aleatoria del mazo
-            String cartaActual = cartasMazo.remove(cartaIndex); // Elimina la carta del mazo
+            int cartaIndex = new Random().nextInt(cartasMazo.size());
+            String cartaActual = cartasMazo.remove(cartaIndex);
             imvMazo.setImage(new Image(getClass().getResource("/images/" + cartaActual).toString()));
         } else {
-            // Si no quedan cartas, mostrar un mensaje
+
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Fin del Juego");
             alert.setHeaderText(null);
             alert.setContentText("El mazo se ha agotado.");
             alert.showAndWait();
-            finalizarJuego(); // Terminar el juego si el mazo se agota
+            finalizarJuego();
         }
     }
-
-    // Finaliza el juego y detiene el temporizador
+    
     private void finalizarJuego() {
         if (timerGeneral != null) {
             timerGeneral.cancel();
@@ -265,9 +259,9 @@ public class Loteria extends Stage {
             timerMazo.cancel();
         }
         juegoIniciado = false;
-        btnIniciar.setDisable(false); // Habilitar el botón de iniciar para un nuevo juego
-        btnFinalizar.setDisable(true); // Desactivar el botón de finalizar
-        btnAnterior.setDisable(false); // Permitir cambiar de plantilla de nuevo
+        btnIniciar.setDisable(false);
+        btnFinalizar.setDisable(true);
+        btnAnterior.setDisable(false);
         btnSiguiente.setDisable(false);
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -277,14 +271,14 @@ public class Loteria extends Stage {
         alert.showAndWait();
     }
 
-    // Verificar si el jugador ha ganado (todas las cartas marcadas)
+
     private void verificarVictoria() {
         boolean haGanado = true;
         Button[][] plantilla = plantillas.get(plantillaActual);
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 StackPane stackPane = (StackPane) ((Button) gdpTablilla.getChildren().get(i * 4 + j)).getGraphic();
-                Label lblMarcador = (Label) stackPane.getChildren().get(1); // Obtener el marcador "X"
+                Label lblMarcador = (Label) stackPane.getChildren().get(1);
                 if (!lblMarcador.isVisible()) {
                     haGanado = false;
                     break;
@@ -299,7 +293,7 @@ public class Loteria extends Stage {
             alert.setHeaderText(null);
             alert.setContentText("¡Has ganado el juego!");
             alert.showAndWait();
-            finalizarJuego(); // Terminar el juego si se ha ganado
+            finalizarJuego();
         }
     }
 }
