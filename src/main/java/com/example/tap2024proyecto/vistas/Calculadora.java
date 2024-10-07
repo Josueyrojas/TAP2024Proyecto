@@ -30,30 +30,40 @@ public class Calculadora extends Stage {
         txtPantalla = new TextField("0");
         txtPantalla.setAlignment(Pos.CENTER_RIGHT);
         txtPantalla.setEditable(false);
+        txtPantalla.setId("pantalla"); // ID para el campo de texto
+
         gdpTeclado = new GridPane();
         CrearTeclado();
+
         btnClear = new Button("Clear");
-        btnClear.setId("font-button");
+        btnClear.setId("btn-clear"); // ID para el botón Clear
         btnClear.setOnAction(event -> limpiar());
+
         vBox = new VBox(txtPantalla, gdpTeclado, btnClear);
-        escena = new Scene(vBox, 200, 200);
-        escena.getStylesheets().add(getClass().getResource("/styles/cal.css").toString());
+        escena = new Scene(vBox, 200, 250); // Ajusté la altura de la escena
+
+        // Añadir la hoja de estilos cal.css
+        escena.getStylesheets().add(getClass().getResource("/styles/cal.css").toExternalForm());
     }
 
     private void CrearTeclado(){
         for (int i = 0; i < arBtns.length; i++) {
             for (int j = 0; j < arBtns.length; j++) {
                 arBtns[j][i] = new Button(strTeclas[4*i+j]);
-                arBtns[j][i].setPrefSize(50,50);
+                arBtns[j][i].setPrefSize(50, 50);
+
+                // Asignar un ID único a cada botón basado en su valor
+                arBtns[j][i].setId("btn-" + strTeclas[4*i+j]);
+
                 int finalI = i;
                 int finalJ = j;
-                arBtns[j][i].setOnAction(event -> detectarTecla(strTeclas[4* finalI + finalJ]));
-                gdpTeclado.add(arBtns[j][i],j,i);
+                arBtns[j][i].setOnAction(event -> detectarTecla(strTeclas[4 * finalI + finalJ]));
+                gdpTeclado.add(arBtns[j][i], j, i);
             }
         }
     }
 
-    public Calculadora(){
+    public Calculadora() {
         CrearUI();
         this.setTitle("Calculadora");
         this.setScene(escena);

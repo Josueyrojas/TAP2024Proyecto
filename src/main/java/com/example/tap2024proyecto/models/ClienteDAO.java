@@ -93,6 +93,7 @@ public class ClienteDAO {
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
 
 
         }

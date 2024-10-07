@@ -1,7 +1,9 @@
 package com.example.tap2024proyecto;
 
 import com.example.tap2024proyecto.models.Conexion;
+import com.example.tap2024proyecto.vistas.Buscaminas;
 import com.example.tap2024proyecto.vistas.Calculadora;
+import com.example.tap2024proyecto.vistas.ListaClientes;
 import com.example.tap2024proyecto.vistas.Loteria;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -22,16 +24,20 @@ public class HelloApplication extends Application {
     private BorderPane bdpPrincipal;
     private MenuBar menBar;
     private Menu menCompetencia1, menuCompetencia2, menSalir;
-    private MenuItem mitCalculadora;
-    private MenuItem mitLoteria;
+    private MenuItem mitCalculadora, mitLoteria, mitSpotify, mitBuscaminas;
+
 
     public void CrearUI(){
         mitCalculadora = new MenuItem("Calculadora");
         mitCalculadora.setOnAction(actionEvent -> new Calculadora());
         mitLoteria = new MenuItem("Loteria");
         mitLoteria.setOnAction(actionEvent -> new Loteria());
+        mitSpotify = new MenuItem("Spotify");
+        mitSpotify.setOnAction(actionEvent -> new ListaClientes());
+        mitBuscaminas = new MenuItem("Buscaminas");
+        mitBuscaminas.setOnAction(actionEvent -> new Buscaminas());
         menCompetencia1 = new Menu("Competencia 1");
-        menCompetencia1.getItems().addAll(mitCalculadora,mitLoteria);
+        menCompetencia1.getItems().addAll(mitCalculadora,mitLoteria,mitSpotify,mitBuscaminas);
         menBar = new MenuBar(menCompetencia1);
         bdpPrincipal = new BorderPane();
         bdpPrincipal.setTop(menBar);
@@ -43,7 +49,7 @@ public class HelloApplication extends Application {
         CrearUI();
         Scene scene = new Scene(bdpPrincipal, 320, 240);
         scene.getStylesheets().add(getClass().getResource("/Styles/main.css").toExternalForm());
-        stage.setTitle("Topicos Avanzados de Programacion");
+        stage.setTitle("Topicos Avanzados de Programacion:)");
         stage.setScene(scene);
         stage.setMaximized(true);
         stage.show();

@@ -32,7 +32,12 @@ public class Loteria extends Stage {
     private GridPane gdpTablilla;
     private ImageView imvMazo;
     private Scene escena;
-    private String[] arImages = {"1.jpg","2.jpg","3.jpg","4.jpg","5.jpg","6.jpg","7.jpg","8.jpg","9.jpg","10.jpg","11.jpg","12.jpg","13.jpg","14.jpg","15.jpg","16.jpg","17.jpg","18.jpg","19.jpg","20.jpg","21.jpg","22.jpg","23.jpg","24.jpg","25.jpg","26.jpg","27.jpg","28.jpg","29.jpg","30.jpg","31.jpg","32.jpg","33.jpg","34.jpg","35.jpg","36.jpg","37.jpg","38.jpg","39.jpg","40.jpg","41.jpg","42.jpg","43.jpg","44.jpg","45.jpg","46.jpg","47.jpg","48.jpg","49.jpg","50.jpg","51.jpg","52.jpg","53.jpg","54.jpg"};
+    private String[] arImages = {"1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg",
+            "11.jpg", "12.jpg", "13.jpg", "14.jpg", "15.jpg", "16.jpg", "17.jpg", "18.jpg", "19.jpg",
+            "20.jpg", "21.jpg", "22.jpg", "23.jpg", "24.jpg", "25.jpg", "26.jpg", "27.jpg", "28.jpg",
+            "29.jpg", "30.jpg", "31.jpg", "32.jpg", "33.jpg", "34.jpg", "35.jpg", "36.jpg", "37.jpg",
+            "38.jpg", "39.jpg", "40.jpg", "41.jpg", "42.jpg", "43.jpg", "44.jpg", "45.jpg", "46.jpg",
+            "47.jpg", "48.jpg", "49.jpg", "50.jpg", "51.jpg", "52.jpg", "53.jpg", "54.jpg"};
     private Button[][] arBtnTab;
     private Timer timerGeneral, timerMazo;
     private int plantillaActual = 0;
@@ -45,14 +50,14 @@ public class Loteria extends Stage {
 
     private Panel pnlPrincipal;
 
-    public Loteria(){
+    public Loteria() {
         CrearUI();
         this.setTitle("Loteria Mexicana :)");
         this.setScene(escena);
         this.show();
     }
 
-    private void CrearUI(){
+    private void CrearUI() {
         ImageView imvAnt, imvSig;
         imvAnt = new ImageView(new Image(getClass().getResource("/images/izquierda.png").toString()));
         imvAnt.setFitHeight(50);
@@ -71,7 +76,7 @@ public class Loteria extends Stage {
         btnSiguiente.setGraphic(imvSig);
 
         btnIniciar = new Button("Iniciar Juego");
-        btnIniciar.getStyleClass().setAll("btn-sm","btn-danger");
+        btnIniciar.getStyleClass().setAll("btn-sm", "btn-danger");
 
         btnFinalizar = new Button("Finalizar Juego");
         btnFinalizar.getStyleClass().setAll("btn-sm", "btn-warning");
@@ -91,7 +96,6 @@ public class Loteria extends Stage {
         escena = new Scene(pnlPrincipal, 800, 600);
         escena.getStylesheets().add(BootstrapFX.bootstrapFXStylesheet());
         escena.getStylesheets().add(getClass().getResource("/styles/loteria.css").toExternalForm());
-
 
         btnAnterior.setOnAction(e -> {
             if (!juegoIniciado) {
@@ -159,7 +163,6 @@ public class Loteria extends Stage {
                     arBtnTab[j][i].setGraphic(stackPane);
                     gridPane.add(arBtnTab[j][i], j, i);
 
-
                     int finalI = i, finalJ = j;
                     String finalCarta = carta;
                     arBtnTab[j][i].setOnAction(e -> {
@@ -190,10 +193,15 @@ public class Loteria extends Stage {
 
         if (cartaDeLaPlantilla.equals(imagenActualMazoNombre)) {
             lblMarcador.setVisible(true);
-            ((Button) stackPane.getParent().getParent()).setDisable(true);
+
+            // Aquí, en vez de buscar el botón en la jerarquía de nodos, usamos el botón que dispara el evento
+            Button buttonClicked = (Button) stackPane.getParent(); // Obtenemos el botón directamente
+            buttonClicked.setDisable(true); // Deshabilitamos el botón
+
             verificarVictoria();
         }
     }
+
 
     private void iniciarJuego() {
         if (timerGeneral != null) {
@@ -206,51 +214,26 @@ public class Loteria extends Stage {
         cartasMazo = new ArrayList<>(cartasDisponibles);
         Collections.shuffle(cartasMazo);
 
-
         timerGeneral = new Timer();
         timerTaskGeneral = new TimerTask() {
             @Override
             public void run() {
-                Platform.runLater(() -> {
-                    segundosTotales++;
-                    int minutos = segundosTotales / 60;
-                    int segundos = segundosTotales % 60;
-                    lblTimer.setText(String.format("%02d:%02d", minutos, segundos));
-                });
+                Platform.runLater(() -> lblTimer.setText(String.format("%02d:%02d", segundosTotales / 60, segundosTotales % 60)));
+                segundosTotales++;
             }
         };
         timerGeneral.scheduleAtFixedRate(timerTaskGeneral, 0, 1000);
-
 
         timerMazo = new Timer();
         timerTaskMazo = new TimerTask() {
             @Override
             public void run() {
-                Platform.runLater(() -> {
-                    siguienteCarta();
-                });
+                Platform.runLater(() -> siguienteCarta());
             }
         };
-        timerMazo.scheduleAtFixedRate(timerTaskMazo, 0, 5000);
+        timerMazo.scheduleAtFixedRate(timerTaskMazo, 0, 5000); // Cambia las cartas cada 5 segundos
     }
 
-
-    private void siguienteCarta() {
-        if (!cartasMazo.isEmpty()) {
-            int cartaIndex = new Random().nextInt(cartasMazo.size());
-            String cartaActual = cartasMazo.remove(cartaIndex);
-            imvMazo.setImage(new Image(getClass().getResource("/images/" + cartaActual).toString()));
-        } else {
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Fin del Juego");
-            alert.setHeaderText(null);
-            alert.setContentText("El mazo se ha agotado.");
-            alert.showAndWait();
-            finalizarJuego();
-        }
-    }
-    
     private void finalizarJuego() {
         if (timerGeneral != null) {
             timerGeneral.cancel();
@@ -263,21 +246,18 @@ public class Loteria extends Stage {
         btnFinalizar.setDisable(true);
         btnAnterior.setDisable(false);
         btnSiguiente.setDisable(false);
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Juego Finalizado");
-        alert.setHeaderText("El juego ha terminado");
-        alert.setContentText("Tiempo total jugado: " + lblTimer.getText());
-        alert.showAndWait();
+        lblTimer.setText("00:00");
+        imvMazo.setImage(new Image(getClass().getResource("/images/dorso.jpeg").toString()));
+        segundosTotales = 0;
     }
-
 
     private void verificarVictoria() {
         boolean haGanado = true;
         Button[][] plantilla = plantillas.get(plantillaActual);
+
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                StackPane stackPane = (StackPane) ((Button) gdpTablilla.getChildren().get(i * 4 + j)).getGraphic();
+                StackPane stackPane = (StackPane) ((Button) plantilla[j][i]).getGraphic();
                 Label lblMarcador = (Label) stackPane.getChildren().get(1);
                 if (!lblMarcador.isVisible()) {
                     haGanado = false;
@@ -294,6 +274,33 @@ public class Loteria extends Stage {
             alert.setContentText("¡Has ganado el juego!");
             alert.showAndWait();
             finalizarJuego();
+        }
+    }
+
+    private void siguienteCarta() {
+        if (!cartasMazo.isEmpty()) {
+            int cartaIndex = new Random().nextInt(cartasMazo.size());
+            String cartaActual = cartasMazo.remove(cartaIndex);
+            imvMazo.setImage(new Image(getClass().getResource("/images/" + cartaActual).toString()));
+        } else {
+            if (!juegoIniciado) return;
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Fin del Juego");
+            alert.setHeaderText(null);
+            alert.setContentText("El mazo se ha agotado.");
+            alert.showAndWait();
+
+            verificarVictoria();
+
+            if (!juegoIniciado) {
+                Alert alertDerrota = new Alert(Alert.AlertType.INFORMATION);
+                alertDerrota.setTitle("Derrota");
+                alertDerrota.setHeaderText(null);
+                alertDerrota.setContentText("No has ganado. ¡Inténtalo de nuevo!");
+                alertDerrota.showAndWait();
+                finalizarJuego();
+            }
         }
     }
 }
