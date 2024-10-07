@@ -1,105 +1,98 @@
 package com.example.tap2024proyecto.vistas;
 
-import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.Random;
 
-import static javafx.application.Application.launch;
-
 public class Buscaminas extends Stage {
 
-    private int gridSize = 10; // Tamaño de la cuadrícula
-    private int bombCount = 10; // Cantidad de bombas
-    private Button[][] buttons; // Botones que representan las casillas
-    private boolean[][] bombGrid; // Almacena la ubicación de las bombas
-    private boolean[][] revealed; // Almacena si una casilla ha sido descubierta
-    private boolean[][] flagged;  // Almacena si una casilla está marcada
+    private int gridSize = 10;
+    private int bombCount = 10;
+    private Button[][] buttons;
+    private boolean[][] bombGrid;
+    private boolean[][] revelar;
+    private boolean[][] marcada;
     private Random random = new Random();
+    private TextField bombInput;
+    private Button generarButton;
+    private GridPane grid;
+    private VBox vBox;
+    private Scene escena;
+    private Image minaImage;
 
-    public static void main(String[] args) {
-        launch(args);
+    public Buscaminas() {
+        CrearUI();
+        this.setTitle("Buscaminas");
+        this.setScene(escena);
+        this.show();
     }
 
-    public void start(Stage primaryStage) {
-        primaryStage.setTitle("Buscaminas");
+    private void CrearUI() {
 
-        // Crear layout principal
-        VBox root = new VBox(10);
-        root.setAlignment(Pos.CENTER);
-
-        // Campo de texto para ingresar cantidad de bombas
-        TextField bombInput = new TextField();
+        minaImage = new Image(getClass().getResourceAsStream("/images/mina.jpeg"));
+        bombInput = new TextField();
         bombInput.setPromptText("Cantidad de Bombas");
 
-        // Botón para generar el campo minado
-        Button generarButton = new Button("Generar Campo Minado");
-
-        // Layout para el campo minado
-        GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
-
-        // Evento del botón "Generar Campo Minado"
+        generarButton = new Button("Generar Campo Minado");
         generarButton.setOnAction(e -> {
             try {
                 bombCount = Integer.parseInt(bombInput.getText());
                 if (bombCount < 1 || bombCount >= gridSize * gridSize) {
                     throw new NumberFormatException("Cantidad inválida de bombas.");
                 }
-                inicializarCampo(grid);
+                inicializarCampo();
             } catch (NumberFormatException ex) {
                 mostrarAlerta("Por favor, ingrese una cantidad válida de bombas.");
             }
         });
 
-        // Agregar componentes al layout
-        root.getChildren().addAll(bombInput, generarButton, grid);
+        grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
 
-        // Configuración de la escena
-        Scene scene = new Scene(root, 400, 500);
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        vBox = new VBox(10, bombInput, generarButton, grid);
+        vBox.setAlignment(Pos.CENTER);
+        escena = new Scene(vBox, 400, 500);
+        escena.getStylesheets().add(getClass().getResource("/styles/buscaminas.css").toExternalForm());
     }
 
-    private void inicializarCampo(GridPane grid) {
-        // Limpiar el campo anterior
+    private void inicializarCampo() {
         grid.getChildren().clear();
-
-        // Inicializar las matrices de bombas y casillas descubiertas
         buttons = new Button[gridSize][gridSize];
         bombGrid = new boolean[gridSize][gridSize];
-        revealed = new boolean[gridSize][gridSize];
-        flagged = new boolean[gridSize][gridSize];
+        revelar = new boolean[gridSize][gridSize];
+        marcada = new boolean[gridSize][gridSize];
 
-        // Colocar bombas aleatoriamente
         for (int i = 0; i < bombCount; i++) {
             int x, y;
             do {
                 x = random.nextInt(gridSize);
                 y = random.nextInt(gridSize);
-            } while (bombGrid[x][y]); // Reintentar si ya hay una bomba en esa posición
+            } while (bombGrid[x][y]);
             bombGrid[x][y] = true;
         }
 
-        // Crear los botones de la cuadrícula
         for (int x = 0; x < gridSize; x++) {
             for (int y = 0; y < gridSize; y++) {
                 Button button = new Button();
-                button.setPrefSize(40, 40);
+                button.setPrefSize(50, 50);
                 final int finalX = x;
                 final int finalY = y;
 
-                // Clic izquierdo para descubrir casilla
+                button.getStyleClass().add("mina-button");
                 button.setOnMouseClicked(e -> {
                     if (e.getButton() == MouseButton.PRIMARY) {
                         descubrirCasilla(finalX, finalY);
                     }
-                    // Clic derecho para marcar casilla
                     if (e.getButton() == MouseButton.SECONDARY) {
                         marcarCasilla(finalX, finalY);
                     }
@@ -112,25 +105,27 @@ public class Buscaminas extends Stage {
     }
 
     private void descubrirCasilla(int x, int y) {
-        if (revealed[x][y] || flagged[x][y]) {
-            return; // Ya ha sido descubierta o marcada
+        if (revelar[x][y] || marcada[x][y]) {
+            return;
         }
 
         if (bombGrid[x][y]) {
-            // Bomba encontrada, el jugador pierde
-            buttons[x][y].setText("B");
-            buttons[x][y].setStyle("-fx-background-color: red;");
+
+            ImageView bombView = new ImageView(minaImage);
+            bombView.setFitWidth(25);
+            bombView.setFitHeight(25);
+            buttons[x][y].setGraphic(bombView);
+            buttons[x][y].setStyle("-fx-background-color: white;");
             mostrarAlerta("¡Has perdido!");
             revelarTodo();
         } else {
             int bombasAdyacentes = contarBombasAdyacentes(x, y);
-            revealed[x][y] = true;
+            revelar[x][y] = true;
 
             if (bombasAdyacentes > 0) {
                 buttons[x][y].setText(String.valueOf(bombasAdyacentes));
             } else {
-                buttons[x][y].setText(""); // Espacio vacío
-                // Descubrir casillas adyacentes si no hay bombas alrededor
+                buttons[x][y].setText("");
                 for (int dx = -1; dx <= 1; dx++) {
                     for (int dy = -1; dy <= 1; dy++) {
                         int nx = x + dx;
@@ -141,21 +136,23 @@ public class Buscaminas extends Stage {
                     }
                 }
             }
-            buttons[x][y].setDisable(true); // Desactivar la casilla
+            buttons[x][y].setDisable(true);
             verificarVictoria();
         }
     }
 
     private void marcarCasilla(int x, int y) {
-        if (revealed[x][y]) {
-            return; // No se puede marcar una casilla descubierta
+        if (revelar[x][y]) {
+            return;
         }
-        if (!flagged[x][y]) {
+        if (!marcada[x][y]) {
             buttons[x][y].setText("F");
-            flagged[x][y] = true;
+            marcada[x][y] = true;
+            buttons[x][y].getStyleClass().add("flagged-button");
         } else {
             buttons[x][y].setText("");
-            flagged[x][y] = false;
+            marcada[x][y] = false;
+            buttons[x][y].getStyleClass().remove("flagged-button");
         }
     }
 
@@ -181,8 +178,11 @@ public class Buscaminas extends Stage {
         for (int x = 0; x < gridSize; x++) {
             for (int y = 0; y < gridSize; y++) {
                 if (bombGrid[x][y]) {
-                    buttons[x][y].setText("B");
-                    buttons[x][y].setStyle("-fx-background-color: red;");
+                    ImageView bombView = new ImageView(minaImage);
+                    bombView.setFitWidth(25);
+                    bombView.setFitHeight(25);
+                    buttons[x][y].setGraphic(bombView);
+                    buttons[x][y].setStyle("-fx-background-color: white;");
                 }
                 buttons[x][y].setDisable(true);
             }
@@ -193,7 +193,7 @@ public class Buscaminas extends Stage {
         int casillasDescubiertas = 0;
         for (int x = 0; x < gridSize; x++) {
             for (int y = 0; y < gridSize; y++) {
-                if (revealed[x][y]) {
+                if (revelar[x][y]) {
                     casillasDescubiertas++;
                 }
             }
@@ -212,4 +212,3 @@ public class Buscaminas extends Stage {
         alert.showAndWait();
     }
 }
-
