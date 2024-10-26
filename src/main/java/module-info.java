@@ -9,6 +9,8 @@ module com.example.tap2024proyecto {
     requires org.kordamp.bootstrapfx.core;
     requires mysql.connector.j;
     requires java.sql;
+    requires kernel;
+    requires layout;
     opens com.example.tap2024proyecto.models;
 
 }

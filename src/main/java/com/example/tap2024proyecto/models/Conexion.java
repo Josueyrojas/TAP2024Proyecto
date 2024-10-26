@@ -12,6 +12,7 @@ public class Conexion {
     static private String PORT  ="3306";
     public static Connection connection;
 
+
     public static void CrearConexion() {
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");

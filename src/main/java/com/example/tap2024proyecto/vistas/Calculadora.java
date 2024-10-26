@@ -30,7 +30,7 @@ public class Calculadora extends Stage {
         txtPantalla = new TextField("0");
         txtPantalla.setAlignment(Pos.CENTER_RIGHT);
         txtPantalla.setEditable(false);
-        txtPantalla.setId("pantalla"); // ID para el campo de texto
+        txtPantalla.setId("pantalla");
 
         gdpTeclado = new GridPane();
         CrearTeclado();
@@ -40,9 +40,7 @@ public class Calculadora extends Stage {
         btnClear.setOnAction(event -> limpiar());
 
         vBox = new VBox(txtPantalla, gdpTeclado, btnClear);
-        escena = new Scene(vBox, 200, 250); // Ajusté la altura de la escena
-
-        // Añadir la hoja de estilos cal.css
+        escena = new Scene(vBox, 200, 250);
         escena.getStylesheets().add(getClass().getResource("/styles/cal.css").toExternalForm());
     }
 

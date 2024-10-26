@@ -193,10 +193,8 @@ public class Loteria extends Stage {
 
         if (cartaDeLaPlantilla.equals(imagenActualMazoNombre)) {
             lblMarcador.setVisible(true);
-
-            // Aquí, en vez de buscar el botón en la jerarquía de nodos, usamos el botón que dispara el evento
-            Button buttonClicked = (Button) stackPane.getParent(); // Obtenemos el botón directamente
-            buttonClicked.setDisable(true); // Deshabilitamos el botón
+            Button buttonClicked = (Button) stackPane.getParent();
+            buttonClicked.setDisable(true);
 
             verificarVictoria();
         }
