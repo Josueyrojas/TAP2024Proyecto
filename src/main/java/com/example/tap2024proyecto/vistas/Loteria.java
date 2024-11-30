@@ -229,17 +229,13 @@ public class Loteria extends Stage {
                 Platform.runLater(() -> siguienteCarta());
             }
         };
-        timerMazo.scheduleAtFixedRate(timerTaskMazo, 0, 5000); // Cambia las cartas cada 5 segundos
+        timerMazo.scheduleAtFixedRate(timerTaskMazo, 0, 2500); // Tiempo de las cartas
     }
 
     private void finalizarJuego() {
-        if (timerGeneral != null) {
-            timerGeneral.cancel();
-        }
-        if (timerMazo != null) {
-            timerMazo.cancel();
-        }
+        detenerTimers();
         juegoIniciado = false;
+        cartasMazo.clear();
         btnIniciar.setDisable(false);
         btnFinalizar.setDisable(true);
         btnAnterior.setDisable(false);
@@ -247,7 +243,20 @@ public class Loteria extends Stage {
         lblTimer.setText("00:00");
         imvMazo.setImage(new Image(getClass().getResource("/images/dorso.jpeg").toString()));
         segundosTotales = 0;
+
+
+        Button[][] plantillaActual = plantillas.get(this.plantillaActual);
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                Button btn = plantillaActual[j][i];
+                StackPane stackPane = (StackPane) btn.getGraphic();
+                Label lblMarcador = (Label) stackPane.getChildren().get(1);
+                lblMarcador.setVisible(false);
+                btn.setDisable(false);
+            }
+        }
     }
+
 
     private void verificarVictoria() {
         boolean haGanado = true;
@@ -266,6 +275,7 @@ public class Loteria extends Stage {
         }
 
         if (haGanado) {
+            detenerTimers();
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Victoria");
             alert.setHeaderText(null);
@@ -274,6 +284,15 @@ public class Loteria extends Stage {
             finalizarJuego();
         }
     }
+    private void detenerTimers() {
+        if (timerGeneral != null) {
+            timerGeneral.cancel();
+        }
+        if (timerMazo != null) {
+            timerMazo.cancel();
+        }
+    }
+
 
     private void siguienteCarta() {
         if (!cartasMazo.isEmpty()) {
@@ -281,23 +300,18 @@ public class Loteria extends Stage {
             String cartaActual = cartasMazo.remove(cartaIndex);
             imvMazo.setImage(new Image(getClass().getResource("/images/" + cartaActual).toString()));
         } else {
-            if (!juegoIniciado) return;
+            if (juegoIniciado) {
+                detenerTimers();
+                verificarVictoria();
 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Fin del Juego");
-            alert.setHeaderText(null);
-            alert.setContentText("El mazo se ha agotado.");
-            alert.showAndWait();
-
-            verificarVictoria();
-
-            if (!juegoIniciado) {
-                Alert alertDerrota = new Alert(Alert.AlertType.INFORMATION);
-                alertDerrota.setTitle("Derrota");
-                alertDerrota.setHeaderText(null);
-                alertDerrota.setContentText("No has ganado. ¡Inténtalo de nuevo!");
-                alertDerrota.showAndWait();
-                finalizarJuego();
+                if (juegoIniciado) {
+                    Alert alertDerrota = new Alert(Alert.AlertType.INFORMATION);
+                    alertDerrota.setTitle("Derrota");
+                    alertDerrota.setHeaderText(null);
+                    alertDerrota.setContentText("No has ganado. ¡Inténtalo de nuevo!");
+                    alertDerrota.showAndWait();
+                    finalizarJuego();
+                }
             }
         }
     }

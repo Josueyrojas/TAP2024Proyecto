@@ -11,66 +11,85 @@ import javafx.stage.Stage;
 import com.example.tap2024proyecto.models.GeneroDAO;
 
 public class FormGenero extends Stage {
-
-    private TextField txtNombreGen;
+    private TextField txtNombreGenero;
     private Button btnGuardar;
     private VBox vBox;
-    private GeneroDAO objGenero;
     private Scene escena;
-    private TableView<GeneroDAO> tvbGenero;
+    private GeneroDAO objGenero;
+    private TableView<GeneroDAO> tblGenero;
 
-    public FormGenero(TableView<GeneroDAO> tvb, GeneroDAO objG) {
-        tvbGenero = tvb;
-        CrearUI();
+    public FormGenero(TableView<GeneroDAO> tableView, GeneroDAO genero) {
+        tblGenero = tableView;
+        crearUI();
 
-        if (objG != null){
-            this.objGenero = objG;
-            txtNombreGen.setText(objGenero.getNombreGen());
-            this.setTitle("Editar Genero");
+        if (genero != null) {
+            this.objGenero = genero;
+            txtNombreGenero.setText(objGenero.getNombreGenero());
+            this.setTitle("Editar Género");
         } else {
             this.objGenero = new GeneroDAO();
-            this.setTitle("Agregar Genero");
+            this.setTitle("Agregar Género");
         }
+
         this.setScene(escena);
         this.show();
     }
 
-    private void CrearUI() {
-        txtNombreGen = new TextField();
-        txtNombreGen.setPromptText("Ingrese el nombre del genero");
+    private void crearUI() {
+        txtNombreGenero = new TextField();
+        txtNombreGenero.setPromptText("Nombre del Género");
+
         btnGuardar = new Button("Guardar");
-        btnGuardar.setOnAction(actionEvent -> GuardarGenero());
-        vBox = new VBox(txtNombreGen, btnGuardar);
+        btnGuardar.setStyle("-fx-background-color: #1db954; -fx-text-fill: white; -fx-cursor: hand;");
+        btnGuardar.setOnAction(actionEvent -> guardarGenero());
+
+        vBox = new VBox(txtNombreGenero, btnGuardar);
         vBox.setPadding(new Insets(10));
         vBox.setSpacing(10);
-        escena = new Scene(vBox, 150, 150);
+
+        escena = new Scene(vBox, 300, 150);
     }
 
-    private void GuardarGenero() {
-        objGenero.setNombreGen(txtNombreGen.getText());
-        String msj;
-        Alert.AlertType type;
+    private void guardarGenero() {
+        String nombreGenero = txtNombreGenero.getText().trim();
 
-        if (objGenero.getIdGenero() > 0){
-            objGenero.UPDATE();
-            msj = "Registro Actualizado con éxito";
-            type = Alert.AlertType.INFORMATION;
-        } else {
-            if (objGenero.INSERT() > 0){
-                msj = "Registro insertado con éxito";
-                type = Alert.AlertType.INFORMATION;
-            } else {
-                msj = "Registro NO Insertado, intente de nuevo";
-                type = Alert.AlertType.ERROR;
-
-            }
-            Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-            alerta.setTitle("Mensaje del Sistema :)");
-            alerta.setContentText(msj);
-            alerta.showAndWait();
+        // Validación del campo
+        if (nombreGenero.isEmpty()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Campos Vacíos", "Por favor, completa el nombre del género.");
+            return;
         }
 
-        tvbGenero.setItems(objGenero.SELECTALL());
-        tvbGenero.refresh();
+        objGenero.setNombreGenero(nombreGenero);
+
+        String mensaje;
+        Alert.AlertType tipo;
+
+        if (objGenero.getIdGenero() > 0) {
+            objGenero.UPDATE();
+            mensaje = "Género actualizado con éxito.";
+            tipo = Alert.AlertType.INFORMATION;
+        } else {
+            if (objGenero.INSERT() > 0) {
+                mensaje = "Género agregado con éxito.";
+                tipo = Alert.AlertType.INFORMATION;
+            } else {
+                mensaje = "Error al agregar el género.";
+                tipo = Alert.AlertType.ERROR;
+            }
+        }
+
+        mostrarAlerta(tipo, "Resultado", mensaje);
+
+        tblGenero.setItems(objGenero.SELECTALL());
+        tblGenero.refresh();
+        this.close();
+    }
+
+    private void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
     }
 }

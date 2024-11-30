@@ -1,19 +1,20 @@
 package com.example.tap2024proyecto.models;
 
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 
 public class AlbumDAO {
-
     private int idAlbum;
     private String tituloAlbum;
     private String fechaAlbum;
+    private double costoAlbum; // Nuevo campo para el costo del álbum
 
+    // Getters y Setters
     public int getIdAlbum() {
         return idAlbum;
     }
@@ -38,57 +39,89 @@ public class AlbumDAO {
         this.fechaAlbum = fechaAlbum;
     }
 
+    public double getCostoAlbum() {
+        return costoAlbum;
+    }
 
+    public void setCostoAlbum(double costoAlbum) {
+        this.costoAlbum = costoAlbum;
+    }
+    public String toString() {
+        return tituloAlbum; // Devuelve el título del álbum
+    }
+
+    // Métodos para operaciones en la base de datos
+
+    // INSERT
     public int INSERT() {
-        int rowCount;
-        String query = "INSERT INTO tblalbum(tituloAlbum, fechaAlbum) " + "VALUES('" + this.tituloAlbum + "', '" + this.fechaAlbum + "')";
-        try {
-            Statement stmt = Conexion.connection.createStatement();
-            rowCount = stmt.executeUpdate(query);
-        } catch (SQLException e) {
-            rowCount = 0;
+        String query = "INSERT INTO tblAlbum (tituloAlbum, fechaAlbum, costoAlbum) VALUES (?, ?, ?)";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, tituloAlbum);
+            stmt.setString(2, fechaAlbum);
+            stmt.setDouble(3, costoAlbum);
+
+            return stmt.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("Error al insertar álbum:");
             e.printStackTrace();
         }
-        return rowCount;
+        return 0;
     }
 
+    // UPDATE
     public void UPDATE() {
-        String query = "UPDATE tblalbum SET tituloAlbum = '" + this.tituloAlbum + "', fechaAlbum = '" + this.fechaAlbum + "' " +
-                "WHERE idAlbum = " + this.idAlbum;
-        try {
-            Statement stmt = Conexion.connection.createStatement();
-            stmt.executeUpdate(query);
-        } catch (SQLException e) {
+        String query = "UPDATE tblAlbum SET tituloAlbum = ?, fechaAlbum = ?, costoAlbum = ? WHERE idAlbum = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, tituloAlbum);
+            stmt.setString(2, fechaAlbum);
+            stmt.setDouble(3, costoAlbum);
+            stmt.setInt(4, idAlbum);
+
+            stmt.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("Error al actualizar álbum:");
             e.printStackTrace();
         }
     }
 
+    // DELETE
     public void DELETE() {
-        String query = "DELETE FROM tblalbum WHERE idAlbum = " + this.idAlbum;
-        try {
-            Statement stmt = Conexion.connection.createStatement();
-            stmt.executeUpdate(query);
-        } catch (SQLException e) {
+        String query = "DELETE FROM tblAlbum WHERE idAlbum = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, idAlbum);
+            stmt.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("Error al eliminar álbum:");
             e.printStackTrace();
         }
     }
 
+    // SELECT ALL
     public ObservableList<AlbumDAO> SELECTALL() {
-        ObservableList<AlbumDAO> listaAlbums = FXCollections.observableArrayList();
-        String query = "SELECT * FROM tblalbum";
-        try {
-            Statement stmt = Conexion.connection.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
+        ObservableList<AlbumDAO> lista = FXCollections.observableArrayList();
+        String query = "SELECT * FROM tblAlbum";
+        try (Connection conn = Conexion.getConexion();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
             while (rs.next()) {
                 AlbumDAO album = new AlbumDAO();
                 album.setIdAlbum(rs.getInt("idAlbum"));
                 album.setTituloAlbum(rs.getString("tituloAlbum"));
                 album.setFechaAlbum(rs.getString("fechaAlbum"));
-                listaAlbums.add(album);
+                album.setCostoAlbum(rs.getDouble("costoAlbum")); // Lee el costo del álbum
+                lista.add(album);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            System.err.println("Error al obtener álbumes:");
             e.printStackTrace();
         }
-        return listaAlbums;
+        return lista;
     }
 }

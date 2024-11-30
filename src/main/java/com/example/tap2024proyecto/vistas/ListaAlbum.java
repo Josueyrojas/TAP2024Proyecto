@@ -10,61 +10,67 @@ import javafx.util.Callback;
 import com.example.tap2024proyecto.components.ButtonCellAlbum;
 import com.example.tap2024proyecto.models.AlbumDAO;
 
-public class ListaAlbum extends Stage{
+public class ListaAlbum extends Stage {
     private TableView<AlbumDAO> tblAlbum;
     private ToolBar tlbMenu;
     private VBox vBox;
     private Scene escena;
-    private Button btnAgregar;
+    private AlbumDAO objAlbum;
 
     public ListaAlbum() {
-        CrearUI();
-        this.setTitle("Lista de Albums");
+        objAlbum = new AlbumDAO();
+        crearUI();
+        this.setTitle("Lista de Álbumes");
         this.setScene(escena);
         this.show();
     }
 
-    private void CrearUI() {
+    private void crearUI() {
+        // Barra de herramientas
         tlbMenu = new ToolBar();
-        ImageView imv = new ImageView(getClass().getResource("/images/derecha.png").toString());
-        Button btnAddArtista = new Button();
-        btnAddArtista.setGraphic(imv);
-        btnAddArtista.setOnAction(actionEvent -> new FormAlbum(tblAlbum, null));
-        tlbMenu.getItems().add(btnAddArtista);
+        ImageView imv = new ImageView(getClass().getResource("/images/Album.png").toString());
+        imv.setFitWidth(20);
+        imv.setFitHeight(20);
 
+        Button btnAddAlbum = new Button("Agregar Álbum");
+        btnAddAlbum.setGraphic(imv);
+        btnAddAlbum.setStyle("-fx-background-color: #1db954; -fx-text-fill: white;");
+        btnAddAlbum.setOnAction(actionEvent -> new FormAlbum(tblAlbum, null));
+        tlbMenu.getItems().add(btnAddAlbum);
+
+        // Tabla
         tblAlbum = new TableView<>();
-        CrearTabla();
+        crearTabla();
 
         vBox = new VBox(tlbMenu, tblAlbum);
-        escena = new Scene(vBox, 400, 400);
+        vBox.setSpacing(10);
+        vBox.setStyle("-fx-padding: 10; -fx-background-color: #f4f4f4;");
+
+        escena = new Scene(vBox, 600, 400);
     }
 
-    private void CrearTabla() {
-        AlbumDAO objAlbum = new AlbumDAO();
-
-        TableColumn<AlbumDAO, String> tbcNomAlb = new TableColumn<>("Nombre del Album");
+    private void crearTabla() {
+        // Columnas de la tabla
+        TableColumn<AlbumDAO, String> tbcNomAlb = new TableColumn<>("Nombre del Álbum");
         tbcNomAlb.setCellValueFactory(new PropertyValueFactory<>("tituloAlbum"));
 
-        TableColumn<AlbumDAO, String> tbcFechaAlb = new TableColumn<>("Fecha del Album");
+        TableColumn<AlbumDAO, String> tbcFechaAlb = new TableColumn<>("Fecha del Álbum");
         tbcFechaAlb.setCellValueFactory(new PropertyValueFactory<>("fechaAlbum"));
 
-        TableColumn<AlbumDAO, String> tbcEditar = new TableColumn<>("");
-        tbcEditar.setCellFactory(new Callback<TableColumn<AlbumDAO, String>, TableCell<AlbumDAO, String>>() {
-            @Override
-            public TableCell<AlbumDAO, String> call(TableColumn<AlbumDAO, String> albumDAOStringTableColumn) {
-                return new ButtonCellAlbum("Editar");
-            }
-        });
+        TableColumn<AlbumDAO, String> tbcEditar = new TableColumn<>("Editar");
+        tbcEditar.setCellFactory(param -> new ButtonCellAlbum("Editar", tblAlbum));
 
-        TableColumn<AlbumDAO, String> tbcEliminar = new TableColumn<>("");
-        tbcEliminar.setCellFactory(new Callback<TableColumn<AlbumDAO, String>, TableCell<AlbumDAO, String>>() {
-            @Override
-            public TableCell<AlbumDAO, String> call(TableColumn<AlbumDAO, String> albumDAOStringTableColumn) {
-                return new ButtonCellAlbum("Eliminar");
-            }
-        });
+        TableColumn<AlbumDAO, String> tbcEliminar = new TableColumn<>("Eliminar");
+        tbcEliminar.setCellFactory(param -> new ButtonCellAlbum("Eliminar", tblAlbum));
 
+        // Agregar columnas a la tabla
         tblAlbum.getColumns().addAll(tbcNomAlb, tbcFechaAlb, tbcEditar, tbcEliminar);
+
+        // Vincular datos a la tabla
         tblAlbum.setItems(objAlbum.SELECTALL());
     }
+    public TableView<AlbumDAO> getContenido() {
+        return tblAlbum;
+    }
+
 }

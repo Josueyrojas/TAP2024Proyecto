@@ -1,24 +1,24 @@
 .root {
-    -fx-background-color: black;  /* Background set to black */
+    -fx-background-color: black; /* Background set to black */
 }
 
 /* Style for input fields */
 .input-field {
-    -fx-background-color: darkgray;  /* Dark gray background */
-    -fx-text-fill: white;  /* White text */
-    -fx-prompt-text-fill: lightgray;  /* Light gray for placeholder text */
+    -fx-background-color: darkgray; /* Dark gray background */
+    -fx-text-fill: white; /* White text */
+    -fx-prompt-text-fill: lightgray; /* Light gray for placeholder text */
     -fx-padding: 10px;
     -fx-font-size: 16px;
     -fx-border-radius: 25px;
     -fx-background-radius: 25px;
-    -fx-border-color: transparent;
+    -fx-border-color: none; /* Evita errores con valores no válidos */
     -fx-min-width: 300px;
 }
 
 /* Style for the sign-in button */
 .sign-in-btn {
-    -fx-background-color: limegreen;  /* Lime green button */
-    -fx-text-fill: white;  /* White text on button */
+    -fx-background-color: limegreen; /* Lime green button */
+    -fx-text-fill: white; /* White text on button */
     -fx-font-weight: bold;
     -fx-font-size: 16px;
     -fx-background-radius: 25px;
@@ -29,12 +29,20 @@
 
 /* Hover effect for the sign-in button */
 .sign-in-btn:hover {
-    -fx-background-color: green;  /* Darker green when hovered */
+    -fx-background-color: green; /* Darker green when hovered */
 }
 
 /* Style for the "Forgot Password?" label */
 .label {
     -fx-padding: 10px;
     -fx-font-size: 12px;
-    -fx-text-fill: lightgray;  /* Light gray for the label text */
+    -fx-text-fill: lightgray; /* Light gray for the label text */
+}
+
+/* Style for table cells */
+.table-cell {
+    -fx-border-color: none; /* Evita conflictos con bordes */
+    -fx-border-width: 0;
+    -fx-padding: 5px;
+    -fx-background-color: inherit; /* Usa el fondo original */
 }

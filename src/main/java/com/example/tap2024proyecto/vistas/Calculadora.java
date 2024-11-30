@@ -18,14 +18,21 @@ public class Calculadora extends Stage {
     private GridPane gdpTeclado;
     private VBox vBox;
     private Scene escena;
-    private String[] strTeclas = {"7","8","9","*","4","5","6","/","1","2","3","+","0",".","=","-"};
+    private String[] strTeclas = {"7", "8", "9", "*", "4", "5", "6", "/", "1", "2", "3", "+", "0", ".", "=", "-"};
 
     private String operador = "";
     private double operando1 = 0;
     private boolean nuevoOperando = true;
     private boolean calculoEnCadena = false;
 
-    private void CrearUI(){
+    public Calculadora() {
+        CrearUI();
+        this.setTitle("Calculadora");
+        this.setScene(escena);
+        this.show();
+    }
+
+    private void CrearUI() {
         arBtns = new Button[4][4];
         txtPantalla = new TextField("0");
         txtPantalla.setAlignment(Pos.CENTER_RIGHT);
@@ -44,32 +51,38 @@ public class Calculadora extends Stage {
         escena.getStylesheets().add(getClass().getResource("/styles/cal.css").toExternalForm());
     }
 
-    private void CrearTeclado(){
-        for (int i = 0; i < arBtns.length; i++) {
-            for (int j = 0; j < arBtns.length; j++) {
-                arBtns[j][i] = new Button(strTeclas[4*i+j]);
-                arBtns[j][i].setPrefSize(50, 50);
-
-                // Asignar un ID único a cada botón basado en su valor
-                arBtns[j][i].setId("btn-" + strTeclas[4*i+j]);
+    private void CrearTeclado() {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                int index = 4 * i + j;
+                arBtns[i][j] = new Button(strTeclas[index]);
+                arBtns[i][j].setPrefSize(50, 50);
+                arBtns[i][j].setId("btn-" + strTeclas[index]);
 
                 int finalI = i;
                 int finalJ = j;
-                arBtns[j][i].setOnAction(event -> detectarTecla(strTeclas[4 * finalI + finalJ]));
-                gdpTeclado.add(arBtns[j][i], j, i);
+                arBtns[i][j].setOnAction(event -> detectarTecla(strTeclas[4 * finalI + finalJ]));
+                gdpTeclado.add(arBtns[i][j], j, i);
             }
         }
     }
 
-    public Calculadora() {
-        CrearUI();
-        this.setTitle("Calculadora");
-        this.setScene(escena);
-        this.show();
+    private boolean esNumeroValido(String texto) {
+        try {
+            Double.parseDouble(texto);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
-    private void detectarTecla(String tecla){
-        if (tecla.matches("[0-9\\.]")) {
+    private void detectarTecla(String tecla) {
+        if (!esNumeroValido(txtPantalla.getText())) {
+            limpiar();
+            return;
+        }
+
+        if (tecla.matches("[0-9]")) {
             if (nuevoOperando) {
                 txtPantalla.setText(tecla);
                 nuevoOperando = false;
@@ -77,14 +90,20 @@ public class Calculadora extends Stage {
                 txtPantalla.appendText(tecla);
             }
             calculoEnCadena = false;
+        } else if (tecla.equals(".")) {
+            if (!txtPantalla.getText().contains(".")) {
+                txtPantalla.appendText(tecla);
+                nuevoOperando = false;
+            }
         } else if (tecla.matches("[\\+\\-\\*/]")) {
-            if (!calculoEnCadena) {
-                operando1 = parseDouble(txtPantalla.getText());
+            if (!nuevoOperando) {
+                realizarOperacion();
             }
             operador = tecla;
             nuevoOperando = true;
         } else if (tecla.equals("=")) {
             realizarOperacion();
+            operador = "";
         }
     }
 
@@ -119,8 +138,7 @@ public class Calculadora extends Stage {
                 }
                 break;
             default:
-                txtPantalla.setText("Error: Operación inválida");
-                error = true;
+                resultado = operando2;
                 break;
         }
 

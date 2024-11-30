@@ -1,69 +1,64 @@
 package com.example.tap2024proyecto.vistas;
 
-import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Callback;
-import com.example.tap2024proyecto.components.ButtonCellArtista;
 import com.example.tap2024proyecto.models.ArtistaDAO;
+import com.example.tap2024proyecto.components.ButtonCellArtista;
 
 public class ListaArtistas extends Stage {
-
     private TableView<ArtistaDAO> tblArtista;
     private ToolBar tlbMenu;
     private VBox vBox;
     private Scene escena;
-    private Button btnAgregar;
 
     public ListaArtistas() {
-        CrearUI();
+        crearUI();
         this.setTitle("Lista de Artistas");
         this.setScene(escena);
         this.show();
     }
 
-    private void CrearUI() {
+    private void crearUI() {
+        // Barra de herramientas con un botón para agregar un nuevo artista
         tlbMenu = new ToolBar();
-        ImageView imv = new ImageView(getClass().getResource("/images/derecha.png").toString());
-        Button btnAddArtista = new Button();
-        btnAddArtista.setGraphic(imv);
-        btnAddArtista.setOnAction(actionEvent -> new FormArtista(tblArtista, null));
+        Button btnAddArtista = new Button("Agregar Artista");
+        btnAddArtista.setOnAction(actionEvent -> new FormArtista(tblArtista, null)); // Null porque estamos agregando un nuevo artista
         tlbMenu.getItems().add(btnAddArtista);
 
+        // Crear la tabla de artistas
         tblArtista = new TableView<>();
-        CrearTabla();
+        crearTabla();
 
+        // Layout contenedor
         vBox = new VBox(tlbMenu, tblArtista);
-        escena = new Scene(vBox, 400, 400);
+        escena = new Scene(vBox, 700, 400);
     }
 
-    private void CrearTabla() {
-        ArtistaDAO objArtista = new ArtistaDAO();
+    private void crearTabla() {
+        // Columna para mostrar el nombre del artista
+        TableColumn<ArtistaDAO, String> tbcNombre = new TableColumn<>("Nombre del Artista");
+        tbcNombre.setCellValueFactory(new PropertyValueFactory<>("nombreArt"));
 
-        TableColumn<ArtistaDAO, String> tbcNombreArt = new TableColumn<>("Nombre del Artista");
-        tbcNombreArt.setCellValueFactory(new PropertyValueFactory<>("nombreArt"));
+        // Columna para editar un artista, con ButtonCellArtista
+        TableColumn<ArtistaDAO, String> tbcEditar = new TableColumn<>("Editar");
+        tbcEditar.setCellFactory(param -> new ButtonCellArtista("Editar", tblArtista));
 
-        TableColumn<ArtistaDAO, String> tbcEditar = new TableColumn<>("");
-        tbcEditar.setCellFactory(new Callback<TableColumn<ArtistaDAO, String>, TableCell<ArtistaDAO, String>>() {
-            @Override
-            public TableCell<ArtistaDAO, String> call(TableColumn<ArtistaDAO, String> param) {
-                return new ButtonCellArtista("Editar", tblArtista);
-            }
-        });
+        // Columna para eliminar un artista, con ButtonCellArtista
+        TableColumn<ArtistaDAO, String> tbcEliminar = new TableColumn<>("Eliminar");
+        tbcEliminar.setCellFactory(param -> new ButtonCellArtista("Eliminar", tblArtista));
 
-        TableColumn<ArtistaDAO, String> tbcEliminar = new TableColumn<>("");
-        tbcEliminar.setCellFactory(new Callback<TableColumn<ArtistaDAO, String>, TableCell<ArtistaDAO, String>>() {
-            @Override
-            public TableCell<ArtistaDAO, String> call(TableColumn<ArtistaDAO, String> param) {
-                return new ButtonCellArtista("Eliminar", tblArtista);
-            }
-        });
+        // Añadir las columnas a la tabla
+        tblArtista.getColumns().addAll(tbcNombre, tbcEditar, tbcEliminar);
 
-        tblArtista.getColumns().addAll(tbcNombreArt, tbcEditar, tbcEliminar);
-        tblArtista.setItems(objArtista.SELECTALL());
+        // Cargar los artistas desde la base de datos
+        tblArtista.setItems(new ArtistaDAO().SELECTALL());
+    }
+
+    // Método para obtener el contenido de la lista de artistas
+    public VBox getContenido() {
+        return vBox;  // Devuelve el VBox que contiene la tabla de artistas
     }
 }

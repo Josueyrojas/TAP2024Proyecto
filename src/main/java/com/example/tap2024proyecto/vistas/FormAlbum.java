@@ -2,19 +2,18 @@ package com.example.tap2024proyecto.vistas;
 
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import com.example.tap2024proyecto.models.AlbumDAO;
+import com.example.tap2024proyecto.models.CancionDAO;
 
 public class FormAlbum extends Stage {
-
     private TextField txtTituloAlbum;
     private TextField txtFechaAlbum;
+    private TextField txtCostoAlbum;
     private Button btnGuardar;
+    private Button btnAgregarCancion;
     private VBox vBox;
     private Scene escena;
     private AlbumDAO objAlbum;
@@ -28,10 +27,11 @@ public class FormAlbum extends Stage {
             this.objAlbum = album;
             txtTituloAlbum.setText(objAlbum.getTituloAlbum());
             txtFechaAlbum.setText(objAlbum.getFechaAlbum());
-            this.setTitle("Editar Album");
+            txtCostoAlbum.setText(String.valueOf(objAlbum.getCostoAlbum()));
+            this.setTitle("Editar Álbum");
         } else {
             this.objAlbum = new AlbumDAO();
-            this.setTitle("Agregar Album");
+            this.setTitle("Agregar Álbum");
         }
 
         this.setScene(escena);
@@ -41,44 +41,64 @@ public class FormAlbum extends Stage {
     private void crearUI() {
         txtTituloAlbum = new TextField();
         txtTituloAlbum.setPromptText("Título del Álbum");
+
         txtFechaAlbum = new TextField();
         txtFechaAlbum.setPromptText("Fecha del Álbum (YYYY-MM-DD)");
+
+        txtCostoAlbum = new TextField();
+        txtCostoAlbum.setPromptText("Costo del Álbum");
+
         btnGuardar = new Button("Guardar");
-        btnGuardar.setOnAction(actionEvent -> GuardarAlbum());
-        vBox = new VBox(txtTituloAlbum, txtFechaAlbum, btnGuardar);
+        btnGuardar.setStyle("-fx-background-color: #1db954; -fx-text-fill: white; -fx-cursor: hand;");
+        btnGuardar.setOnAction(actionEvent -> guardarAlbum());
+
+        btnAgregarCancion = new Button("Agregar Canción");
+        btnAgregarCancion.setStyle("-fx-background-color: #1db954; -fx-text-fill: white; -fx-cursor: hand;");
+        btnAgregarCancion.setOnAction(actionEvent -> agregarCancion());
+
+        vBox = new VBox(txtTituloAlbum, txtFechaAlbum, txtCostoAlbum, btnGuardar, btnAgregarCancion);
         vBox.setPadding(new Insets(10));
         vBox.setSpacing(10);
-        escena = new Scene(vBox, 150, 150);
+
+        escena = new Scene(vBox, 400, 300);
     }
 
-    private void GuardarAlbum(){
+    private void guardarAlbum() {
         objAlbum.setTituloAlbum(txtTituloAlbum.getText());
         objAlbum.setFechaAlbum(txtFechaAlbum.getText());
+        objAlbum.setCostoAlbum(Double.parseDouble(txtCostoAlbum.getText()));
+
         String msj;
         Alert.AlertType type;
 
-        if (objAlbum.getIdAlbum() > 0){
+        if (objAlbum.getIdAlbum() > 0) {
             objAlbum.UPDATE();
-            msj = "Registro Actualizado con éxito";
+            msj = "Registro actualizado con éxito";
             type = Alert.AlertType.INFORMATION;
-        }else {
+        } else {
             if (objAlbum.INSERT() > 0) {
-                msj = "Registro Insertado con éxito";
+                msj = "Registro insertado con éxito";
                 type = Alert.AlertType.INFORMATION;
-
             } else {
-                msj = "Registro NO Insertado, intente de nuevo";
+                msj = "Registro NO insertado, intente de nuevo";
                 type = Alert.AlertType.ERROR;
-
             }
-
-            Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-            alerta.setTitle("Mensaje del Sistema :)");
-            alerta.setContentText(msj);
-            alerta.showAndWait();
         }
+
+        Alert alerta = new Alert(type);
+        alerta.setTitle("Mensaje del Sistema");
+        alerta.setContentText(msj);
+        alerta.showAndWait();
 
         tblAlbum.setItems(objAlbum.SELECTALL());
         tblAlbum.refresh();
+        this.close();
+    }
+
+    private void agregarCancion() {
+        TableView<CancionDAO> tblCancion = new TableView<>(); // Tabla temporal para canciones.
+        CancionDAO nuevaCancion = new CancionDAO(); // Nueva instancia de CancionDAO.
+        nuevaCancion.setIdAlbum(objAlbum.getIdAlbum()); // Asocia la canción con el álbum actual.
+        new FormCancion(tblCancion, nuevaCancion); // Llama al constructor de FormCancion.
     }
 }

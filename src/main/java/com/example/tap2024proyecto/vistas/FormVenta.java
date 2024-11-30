@@ -1,32 +1,33 @@
 package com.example.tap2024proyecto.vistas;
 
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.scene.control.TableView;
 import com.example.tap2024proyecto.models.VentasDAO;
 import com.example.tap2024proyecto.models.ClienteDAO;
 
 public class FormVenta extends Stage {
-
+    private ComboBox<ClienteDAO> cmbCliente;
     private TextField txtFechaVenta;
-    private ComboBox<ClienteDAO> cmbClientes;
+    private TextField txtTotalVenta;
     private Button btnGuardar;
     private VBox vBox;
-    private VentasDAO objVenta;
     private Scene escena;
+    private VentasDAO objVenta;
     private TableView<VentasDAO> tblVenta;
 
-    public FormVenta(TableView<VentasDAO> tbl, VentasDAO objV) {
-        tblVenta = tbl;
+    public FormVenta(TableView<VentasDAO> tableView, VentasDAO venta) {
+        tblVenta = tableView;
         crearUI();
 
-        if (objV != null) {
-            this.objVenta = objV;
+        if (venta != null) {
+            this.objVenta = venta;
+            cmbCliente.getSelectionModel().select(findCliente(objVenta.getIdCliente()));
             txtFechaVenta.setText(objVenta.getFechaVenta());
-            cmbClientes.setValue(getClienteById(objVenta.getIdCliente()));
+            txtTotalVenta.setText(String.valueOf(objVenta.getTotalVenta()));
             this.setTitle("Editar Venta");
         } else {
             this.objVenta = new VentasDAO();
@@ -38,29 +39,32 @@ public class FormVenta extends Stage {
     }
 
     private void crearUI() {
-        txtFechaVenta = new TextField();
-        txtFechaVenta.setPromptText("Ingrese la fecha de la venta (YYYY-MM-DD)");
+        cmbCliente = new ComboBox<>();
+        cmbCliente.setPromptText("Selecciona un Cliente");
+        cmbCliente.setItems(loadClientes());
 
-        cmbClientes = new ComboBox<>();
-        cargarClientes();
+        txtFechaVenta = new TextField();
+        txtFechaVenta.setPromptText("Fecha de la Venta (YYYY-MM-DD)");
+
+        txtTotalVenta = new TextField();
+        txtTotalVenta.setPromptText("Total de la Venta");
 
         btnGuardar = new Button("Guardar");
         btnGuardar.setOnAction(actionEvent -> guardarVenta());
 
-        vBox = new VBox(txtFechaVenta, cmbClientes, btnGuardar);
+        vBox = new VBox(cmbCliente, txtFechaVenta, txtTotalVenta, btnGuardar);
         vBox.setPadding(new Insets(10));
         vBox.setSpacing(10);
-        escena = new Scene(vBox, 300, 200);
+
+        escena = new Scene(vBox, 400, 300);
     }
 
-    private void cargarClientes() {
-        ClienteDAO objCliente = new ClienteDAO();
-        cmbClientes.setItems(objCliente.SELECTALL());
-        cmbClientes.setPromptText("Seleccione un cliente");
+    private ObservableList<ClienteDAO> loadClientes() {
+        return new ClienteDAO().SELECTALL();
     }
 
-    private ClienteDAO getClienteById(int idCliente) {
-        for (ClienteDAO cliente : cmbClientes.getItems()) {
+    private ClienteDAO findCliente(int idCliente) {
+        for (ClienteDAO cliente : loadClientes()) {
             if (cliente.getIdCte() == idCliente) {
                 return cliente;
             }
@@ -69,42 +73,48 @@ public class FormVenta extends Stage {
     }
 
     private void guardarVenta() {
-        objVenta.setFechaVenta(txtFechaVenta.getText());
-        ClienteDAO clienteSeleccionado = cmbClientes.getValue();
+        if (cmbCliente.getSelectionModel().isEmpty()) {
+            showAlert("Debe seleccionar un cliente.", Alert.AlertType.WARNING);
+            return;
+        }
 
-        if (clienteSeleccionado != null) {
-            objVenta.setIdCliente(clienteSeleccionado.getIdCte());
+        try {
+            objVenta.setIdCliente(cmbCliente.getSelectionModel().getSelectedItem().getIdCte());
+            objVenta.setFechaVenta(txtFechaVenta.getText());
+            objVenta.setTotalVenta(Double.parseDouble(txtTotalVenta.getText()));
 
-            String msj;
-            Alert.AlertType type;
+            String mensaje;
+            Alert.AlertType tipo;
 
             if (objVenta.getIdVenta() > 0) {
                 objVenta.UPDATE();
-                msj = "Venta actualizada con éxito.";
-                type = Alert.AlertType.INFORMATION;
+                mensaje = "Venta actualizada con éxito.";
+                tipo = Alert.AlertType.INFORMATION;
             } else {
-                if (objVenta.Insert() > 0) {
-                    msj = "Venta registrada con éxito.";
-                    type = Alert.AlertType.INFORMATION;
+                if (objVenta.INSERT() > 0) {
+                    mensaje = "Venta agregada con éxito.";
+                    tipo = Alert.AlertType.INFORMATION;
                 } else {
-                    msj = "Error al registrar la venta. Intente nuevamente.";
-                    type = Alert.AlertType.ERROR;
+                    mensaje = "Error al agregar la venta.";
+                    tipo = Alert.AlertType.ERROR;
                 }
             }
 
-            Alert alerta = new Alert(type);
-            alerta.setTitle("Mensaje del Sistema");
-            alerta.setContentText(msj);
-            alerta.showAndWait();
+            showAlert(mensaje, tipo);
 
             tblVenta.setItems(objVenta.SELECTALL());
             tblVenta.refresh();
             this.close();
-        } else {
-            Alert alerta = new Alert(Alert.AlertType.WARNING);
-            alerta.setTitle("Advertencia");
-            alerta.setContentText("Por favor seleccione un cliente.");
-            alerta.showAndWait();
+
+        } catch (NumberFormatException e) {
+            showAlert("El total debe ser un número válido.", Alert.AlertType.ERROR);
         }
+    }
+
+    private void showAlert(String mensaje, Alert.AlertType tipo) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle("Resultado");
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
     }
 }

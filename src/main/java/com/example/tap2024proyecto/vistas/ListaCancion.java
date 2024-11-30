@@ -3,72 +3,61 @@ package com.example.tap2024proyecto.vistas;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Callback;
-import com.example.tap2024proyecto.components.ButtonCellCancion;
 import com.example.tap2024proyecto.models.CancionDAO;
-
+import com.example.tap2024proyecto.components.ButtonCellCancion;
 
 public class ListaCancion extends Stage {
-
     private TableView<CancionDAO> tblCancion;
     private ToolBar tlbMenu;
     private VBox vBox;
     private Scene escena;
 
     public ListaCancion() {
-        CrearUI();
+        crearUI();
         this.setTitle("Lista de Canciones");
         this.setScene(escena);
         this.show();
     }
 
-    private void CrearUI() {
+    private void crearUI() {
         tlbMenu = new ToolBar();
-        ImageView imv = new ImageView(getClass().getResource("/images/derecha.png").toString());
-        Button btnAddCancion = new Button();
-        btnAddCancion.setOnAction(actionEvent -> new FormCancion(tblCancion, null));
-        btnAddCancion.setGraphic(imv);
+
+        // Botón para agregar una nueva canción
+        Button btnAddCancion = new Button("Agregar Canción");
+        btnAddCancion.setOnAction(actionEvent -> new FormCancion(tblCancion, null)); // null porque estamos agregando una nueva canción
         tlbMenu.getItems().add(btnAddCancion);
 
         tblCancion = new TableView<>();
-        CrearTable();
+        crearTabla();
 
         vBox = new VBox(tlbMenu, tblCancion);
-        escena = new Scene(vBox, 600, 400);
+        escena = new Scene(vBox, 700, 400);
     }
 
-    private void CrearTable() {
-        CancionDAO objCancion = new CancionDAO();
-
+    private void crearTabla() {
+        // Columna para mostrar el título de la canción
         TableColumn<CancionDAO, String> tbcTitulo = new TableColumn<>("Título");
         tbcTitulo.setCellValueFactory(new PropertyValueFactory<>("tituloCan"));
 
-        TableColumn<CancionDAO, String> tbcDuracion = new TableColumn<>("Duración");
-        tbcDuracion.setCellValueFactory(new PropertyValueFactory<>("duracionCan"));
+        // Columna para editar una canción (con ButtonCellCancion)
+        TableColumn<CancionDAO, String> tbcEditar = new TableColumn<>("Editar");
+        tbcEditar.setCellFactory(param -> new ButtonCellCancion("Editar"));
 
-        TableColumn<CancionDAO, String> tbcGenero = new TableColumn<>("Género");
-        tbcGenero.setCellValueFactory(new PropertyValueFactory<>("nombreGen"));
+        // Columna para eliminar una canción (con ButtonCellCancion)
+        TableColumn<CancionDAO, String> tbcEliminar = new TableColumn<>("Eliminar");
+        tbcEliminar.setCellFactory(param -> new ButtonCellCancion("Eliminar"));
 
-        TableColumn<CancionDAO, String> tbcEditar = new TableColumn<>("");
-        tbcEditar.setCellFactory(new Callback<TableColumn<CancionDAO, String>, TableCell<CancionDAO, String>>() {
-            @Override
-            public TableCell<CancionDAO, String> call(TableColumn<CancionDAO, String> cancionDAOStringTableColumn) {
-                return new ButtonCellCancion("Editar");
-            }
-        });
+        // Añadimos las columnas a la tabla
+        tblCancion.getColumns().addAll(tbcTitulo, tbcEditar, tbcEliminar);
 
-        TableColumn<CancionDAO, String> tbcEliminar = new TableColumn<>("");
-        tbcEliminar.setCellFactory(new Callback<TableColumn<CancionDAO, String>, TableCell<CancionDAO, String>>() {
-            @Override
-            public TableCell<CancionDAO, String> call(TableColumn<CancionDAO, String> cancionDAOStringTableColumn) {
-                return new ButtonCellCancion("Eliminar");
-            }
-        });
+        // Cargamos las canciones desde la base de datos
+        tblCancion.setItems(new CancionDAO().SELECTALL());
+    }
 
-        tblCancion.getColumns().addAll(tbcTitulo, tbcDuracion, tbcGenero, tbcEditar, tbcEliminar);
-        tblCancion.setItems(objCancion.SELECTALL());
+    // Método para obtener el VBox, que es el contenedor principal
+    public VBox getContenido() {
+        return vBox;
     }
 }

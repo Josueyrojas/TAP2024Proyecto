@@ -3,15 +3,16 @@ package com.example.tap2024proyecto.models;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 public class ArtistaDAO {
-
     private int idArtista;
     private String nombreArt;
 
+    // Getters y Setters
     public int getIdArtista() {
         return idArtista;
     }
@@ -28,55 +29,100 @@ public class ArtistaDAO {
         this.nombreArt = nombreArt;
     }
 
-    public int INSERT(){
-        int rowCount;
-        String query = "INSERT INTO tblartista(nombreArt)" + " values('"+this.nombreArt+"')";
-        try {
-            Statement stmt = Conexion.connection.createStatement();
-            rowCount = stmt.executeUpdate(query);
+    // Sobrescribir el método toString() para mostrar el nombre del artista en el ComboBox
+    @Override
+    public String toString() {
+        return this.nombreArt; // Retorna el nombre del artista en lugar del objeto
+    }
+
+    // Método para insertar un artista
+    public int INSERT() {
+        int rowCount = 0;
+        String query = "INSERT INTO tblArtista(nombreArt) VALUES (?)";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, this.nombreArt);
+            rowCount = stmt.executeUpdate();
+            System.out.println("Artista agregado correctamente.");
         } catch (SQLException e) {
-            rowCount = 0;
+            System.err.println("Error al insertar artista:");
             e.printStackTrace();
         }
         return rowCount;
     }
 
-    public void UPDATE(){
-        String query = "UPDATE tblartista SET nombreArt = '" + this.nombreArt + "' WHERE idArtista = " + this.idArtista;
-        try {
-            Statement stmt = Conexion.connection.createStatement();
-            stmt.executeUpdate(query);
+    // Método para actualizar un artista
+    public void UPDATE() {
+        String query = "UPDATE tblArtista SET nombreArt = ? WHERE idArtista = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, this.nombreArt);
+            stmt.setInt(2, this.idArtista);
+            stmt.executeUpdate();
+            System.out.println("Artista actualizado correctamente.");
         } catch (SQLException e) {
+            System.err.println("Error al actualizar artista:");
             e.printStackTrace();
         }
     }
 
-    public void DELETE(){
-        String query = "DELETE FROM tblartista WHERE idArtista = " + this.idArtista;
-        try {
-            Statement stmt = Conexion.connection.createStatement();
-            stmt.executeUpdate(query);
-        }catch (Exception e){
+    // Método para eliminar un artista
+    public void DELETE() {
+        String query = "DELETE FROM tblArtista WHERE idArtista = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, this.idArtista);
+            stmt.executeUpdate();
+            System.out.println("Artista eliminado correctamente.");
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar artista:");
             e.printStackTrace();
         }
     }
 
-    public ObservableList<ArtistaDAO> SELECTALL(){
-        ArtistaDAO objArt;
-        String query = "SELECT * FROM tblartista";
-        ObservableList<ArtistaDAO> ListaA = FXCollections.observableArrayList();
-        try{
-            Statement stmt = Conexion.connection.createStatement();
-            ResultSet res = stmt.executeQuery(query);
-            while(res.next()){
-                objArt = new ArtistaDAO();
-                objArt.idArtista = res.getInt("idArtista");
-                objArt.nombreArt = res.getString("nombreArt");
-                ListaA.add(objArt);
+    // Método para obtener todos los artistas
+    public ObservableList<ArtistaDAO> SELECTALL() {
+        ObservableList<ArtistaDAO> listaArtistas = FXCollections.observableArrayList();
+        String query = "SELECT * FROM tblArtista";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                ArtistaDAO artista = new ArtistaDAO();
+                artista.setIdArtista(rs.getInt("idArtista"));
+                artista.setNombreArt(rs.getString("nombreArt"));
+                listaArtistas.add(artista);
             }
-        } catch (Exception e) {
+            System.out.println("Artistas cargados: " + listaArtistas.size());
+        } catch (SQLException e) {
+            System.err.println("Error al obtener artistas:");
             e.printStackTrace();
         }
-        return ListaA;
+        return listaArtistas;
+    }
+
+    // Método para obtener un artista por su ID
+    public static ArtistaDAO SELECTBYID(int idArtista) {
+        ArtistaDAO artista = null;
+        String query = "SELECT * FROM tblArtista WHERE idArtista = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, idArtista);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                artista = new ArtistaDAO();
+                artista.setIdArtista(rs.getInt("idArtista"));
+                artista.setNombreArt(rs.getString("nombreArt"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener el artista por ID:");
+            e.printStackTrace();
+        }
+        return artista;
     }
 }
