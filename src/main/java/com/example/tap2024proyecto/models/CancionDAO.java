@@ -7,6 +7,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.example.tap2024proyecto.models.Conexion.getConnection;
 
 public class CancionDAO {
     private int idCancion;
@@ -27,6 +31,22 @@ public class CancionDAO {
         this.idGenero = idGenero;
         this.idAlbum = idAlbum;
         this.idArtista = idArtista; // Inicializar la nueva propiedad
+    }
+    public List<String> obtenerCancionesPorAlbum(int idAlbum) {
+        List<String> canciones = new ArrayList<>();
+        try (Connection con = Conexion.getConnection()) {
+            String query = "SELECT nombreCancion FROM canciones WHERE idAlbum = ?";
+            PreparedStatement pst = con.prepareStatement(query);
+            pst.setInt(1, idAlbum);
+            ResultSet rs = pst.executeQuery();
+
+            while (rs.next()) {
+                canciones.add(rs.getString("nombreCancion"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return canciones;
     }
 
     // Getters y Setters
@@ -192,7 +212,7 @@ public class CancionDAO {
     }
 
     // Método para eliminar una canción
-    public void DELETE() {
+    public boolean DELETE() {
         String query = "DELETE FROM tblCancion WHERE idCancion = ?";
         try (Connection conn = Conexion.getConexion();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -202,5 +222,6 @@ public class CancionDAO {
             System.err.println("Error al eliminar canción: " + e.getMessage());
             e.printStackTrace();
         }
+        return false;
     }
 }

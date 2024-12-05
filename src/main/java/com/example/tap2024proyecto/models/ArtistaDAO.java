@@ -2,11 +2,9 @@ package com.example.tap2024proyecto.models;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ComboBox;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class ArtistaDAO {
     private int idArtista;
@@ -103,6 +101,31 @@ public class ArtistaDAO {
             e.printStackTrace();
         }
         return listaArtistas;
+    }
+
+    // Método para obtener solo los nombres de los artistas (útil para ComboBox)
+    public static ObservableList<String> getAllArtistas() {
+        ObservableList<String> artistas = FXCollections.observableArrayList();
+        String query = "SELECT nombreArt FROM tblArtista";
+
+        ComboBox<String> comboArtistas = new ComboBox<>();
+        comboArtistas.setItems(ArtistaDAO.getAllArtistas());
+
+
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                artistas.add(rs.getString("nombreArt"));
+            }
+            System.out.println("Artistas cargados: " + artistas.size());
+        } catch (SQLException e) {
+            System.err.println("Error al obtener los nombres de los artistas:");
+            e.printStackTrace();
+        }
+
+        return artistas;
     }
 
     // Método para obtener un artista por su ID

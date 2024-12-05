@@ -29,19 +29,34 @@ public class ButtonCellVentas extends TableCell<VentasDAO, String> {
         VentasDAO venta = this.getTableView().getItems().get(rowIndex);
 
         if (action.equals("Editar")) {
+            // Abrir formulario de edición
             new FormVenta(this.getTableView(), venta);
         } else if (action.equals("Eliminar")) {
+            // Confirmación de eliminación
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Confirmación");
             alert.setContentText("¿Deseas eliminar esta venta?");
             Optional<ButtonType> result = alert.showAndWait();
 
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                venta.DELETE();
+                // Llamar al método DELETE() de VentasDAO
+                int rowsAffected = venta.DELETE();
 
-                // Actualizar tabla
-                this.getTableView().setItems(venta.SELECTALL());
-                this.getTableView().refresh();
+                if (rowsAffected > 0) {
+                    // Si la venta se eliminó correctamente, actualizar la tabla
+                    this.getTableView().getItems().remove(venta);
+                    this.getTableView().refresh();
+                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                    successAlert.setTitle("Éxito");
+                    successAlert.setContentText("Venta eliminada correctamente.");
+                    successAlert.showAndWait();
+                } else {
+                    // Si no se eliminó correctamente
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setTitle("Error");
+                    errorAlert.setContentText("Hubo un error al eliminar la venta.");
+                    errorAlert.showAndWait();
+                }
             }
         }
     }

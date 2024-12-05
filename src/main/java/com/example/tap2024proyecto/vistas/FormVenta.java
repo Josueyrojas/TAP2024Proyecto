@@ -18,6 +18,7 @@ public class FormVenta extends Stage {
     private Scene escena;
     private VentasDAO objVenta;
     private TableView<VentasDAO> tblVenta;
+    private ListView<String> listProductos;  // Añadido para mostrar los productos seleccionados
 
     public FormVenta(TableView<VentasDAO> tableView, VentasDAO venta) {
         tblVenta = tableView;
@@ -52,7 +53,12 @@ public class FormVenta extends Stage {
         btnGuardar = new Button("Guardar");
         btnGuardar.setOnAction(actionEvent -> guardarVenta());
 
-        vBox = new VBox(cmbCliente, txtFechaVenta, txtTotalVenta, btnGuardar);
+        // Lista de productos seleccionados para la venta
+        listProductos = new ListView<>();
+        listProductos.setPrefHeight(150);
+        listProductos.setPlaceholder(new Label("Selecciona los productos"));
+
+        vBox = new VBox(cmbCliente, txtFechaVenta, txtTotalVenta, listProductos, btnGuardar);
         vBox.setPadding(new Insets(10));
         vBox.setSpacing(10);
 
@@ -83,15 +89,20 @@ public class FormVenta extends Stage {
             objVenta.setFechaVenta(txtFechaVenta.getText());
             objVenta.setTotalVenta(Double.parseDouble(txtTotalVenta.getText()));
 
+            // Obtener los IDs de los productos seleccionados
+            int[] idsProductos = obtenerIdsDeProductos();
+
             String mensaje;
             Alert.AlertType tipo;
 
             if (objVenta.getIdVenta() > 0) {
-                objVenta.UPDATE();
+                // Llamar al método UPDATE y pasar el arreglo de IDs de los productos
+                objVenta.UPDATE(idsProductos);
                 mensaje = "Venta actualizada con éxito.";
                 tipo = Alert.AlertType.INFORMATION;
             } else {
-                if (objVenta.INSERT() > 0) {
+                // Llamar al método INSERT con los productos seleccionados
+                if (objVenta.INSERT(idsProductos) > 0) {
                     mensaje = "Venta agregada con éxito.";
                     tipo = Alert.AlertType.INFORMATION;
                 } else {
@@ -109,6 +120,16 @@ public class FormVenta extends Stage {
         } catch (NumberFormatException e) {
             showAlert("El total debe ser un número válido.", Alert.AlertType.ERROR);
         }
+    }
+
+
+    // Este método debe retornar los IDs de los productos seleccionados en la UI
+    private int[] obtenerIdsDeProductos() {
+        // Asumiendo que los productos están representados por Strings, y puedes tener una lógica para obtener los IDs
+        // Cambia esto según cómo manejes los productos (por ejemplo, podrías tener una lista de productos en tu UI)
+
+        // Ejemplo estático:
+        return new int[]{1, 2, 3};  // Reemplaza esto con la lógica real para obtener los productos seleccionados
     }
 
     private void showAlert(String mensaje, Alert.AlertType tipo) {

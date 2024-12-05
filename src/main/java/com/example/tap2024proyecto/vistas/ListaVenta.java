@@ -10,8 +10,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import com.example.tap2024proyecto.models.VentasDAO;
+import com.example.tap2024proyecto.models.VentasDAO.ArtistasVentas;
+import com.example.tap2024proyecto.models.VentasDAO.CancionesMasVendidas;
 import com.example.tap2024proyecto.components.ButtonCell;
 
 public class ListaVenta extends Stage {
@@ -57,6 +58,7 @@ public class ListaVenta extends Stage {
     }
 
     private void crearTabla() {
+        // Definir las columnas de la tabla
         TableColumn<VentasDAO, String> tbcCliente = new TableColumn<>("Cliente");
         tbcCliente.setCellValueFactory(new PropertyValueFactory<>("idCliente"));
 
@@ -66,12 +68,14 @@ public class ListaVenta extends Stage {
         TableColumn<VentasDAO, String> tbcTotal = new TableColumn<>("Total");
         tbcTotal.setCellValueFactory(new PropertyValueFactory<>("totalVenta"));
 
+        // Columnas para acciones
         TableColumn<VentasDAO, String> tbcEditar = new TableColumn<>("Editar");
         tbcEditar.setCellFactory(param -> new ButtonCell<>("Editar", tblVenta));
 
         TableColumn<VentasDAO, String> tbcEliminar = new TableColumn<>("Eliminar");
         tbcEliminar.setCellFactory(param -> new ButtonCell<>("Eliminar", tblVenta));
 
+        // Añadir las columnas a la tabla
         tblVenta.getColumns().addAll(tbcCliente, tbcFecha, tbcTotal, tbcEditar, tbcEliminar);
         tblVenta.setItems(new VentasDAO().SELECTALL());
     }

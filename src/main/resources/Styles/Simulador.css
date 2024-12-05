@@ -1,0 +1,61 @@
+/* Estilo base para el simulador */
+.vbox-simulador {
+    -fx-background-color: lightgray;
+    -fx-padding: 20;
+    -fx-alignment: center;
+}
+
+/* Estilo para los botones */
+.button-simulador {
+    -fx-background-color: forestgreen; /* Color verde */
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+.button-simulador:hover {
+    -fx-background-color: darkgreen; /* Color verde más oscuro al pasar el mouse */
+}
+
+.button-simulador:disabled {
+    -fx-background-color: lightgray; /* Color gris cuando está deshabilitado */
+    -fx-text-fill: gray;
+}
+
+/* Estilo para la tabla */
+.table-view {
+    -fx-pref-width: 500px;
+    -fx-font-size: 12px;
+    -fx-border-color: lightgray;
+    -fx-background-color: white;
+}
+
+/* Estilo para las celdas de la tabla */
+.table-cell {
+    -fx-alignment: center;
+    -fx-padding: 5;
+}
+
+/* Barra de progreso */
+.progress-bar {
+    -fx-pref-width: 500px;
+    -fx-pref-height: 20px;
+    -fx-accent: forestgreen; /* Color verde para la barra de progreso */
+}
+
+/* Estilo para la imagen de la impresora */
+.image-impresora {
+    -fx-padding: 10;
+    -fx-alignment: center;
+    -fx-fit-width: 100;
+    -fx-fit-height: 100;
+}
+
+/* Estilo para el título */
+.label-titulo {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: darkslategray;
+    -fx-alignment: center;
+}

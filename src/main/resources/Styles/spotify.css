@@ -1,48 +1,88 @@
+/* Estilo global para el fondo de la ventana */
 .root {
-    -fx-background-color: black; /* Background set to black */
+    -fx-background-color: black; /* Fondo oscuro */
 }
 
-/* Style for input fields */
+/* Estilo para los campos de texto (input fields) */
 .input-field {
-    -fx-background-color: darkgray; /* Dark gray background */
-    -fx-text-fill: white; /* White text */
-    -fx-prompt-text-fill: lightgray; /* Light gray for placeholder text */
+    -fx-background-color: darkgray; /* Fondo oscuro para el campo de texto */
+    -fx-text-fill: white; /* Color de texto blanco */
+    -fx-prompt-text-fill: lightgray; /* Color del texto de marcador de posición */
     -fx-padding: 10px;
     -fx-font-size: 16px;
-    -fx-border-radius: 25px;
-    -fx-background-radius: 25px;
-    -fx-border-color: none; /* Evita errores con valores no válidos */
-    -fx-min-width: 300px;
+    -fx-border-radius: 25px; /* Bordes redondeados */
+    -fx-background-radius: 25px; /* Bordes redondeados */
+    -fx-border-color: transparent; /* Sin borde visible */
+    -fx-min-width: 300px; /* Ancho mínimo */
 }
 
-/* Style for the sign-in button */
+/* Estilo para el botón de inicio de sesión */
 .sign-in-btn {
-    -fx-background-color: limegreen; /* Lime green button */
-    -fx-text-fill: white; /* White text on button */
+    -fx-background-color: limegreen; /* Color verde */
+    -fx-text-fill: white; /* Texto blanco */
     -fx-font-weight: bold;
     -fx-font-size: 16px;
-    -fx-background-radius: 25px;
-    -fx-min-width: 300px;
+    -fx-background-radius: 25px; /* Bordes redondeados */
+    -fx-min-width: 300px; /* Ancho mínimo */
     -fx-padding: 10px;
-    -fx-cursor: hand;
+    -fx-cursor: hand; /* Cambia el cursor al pasar sobre el botón */
 }
 
-/* Hover effect for the sign-in button */
+/* Efecto hover para el botón */
 .sign-in-btn:hover {
-    -fx-background-color: green; /* Darker green when hovered */
+    -fx-background-color: green; /* Verde más oscuro al pasar el ratón */
 }
 
-/* Style for the "Forgot Password?" label */
+/* Estilo para las etiquetas (labels) */
 .label {
     -fx-padding: 10px;
     -fx-font-size: 12px;
-    -fx-text-fill: lightgray; /* Light gray for the label text */
+    -fx-text-fill: lightgray; /* Texto gris claro para las etiquetas */
 }
 
-/* Style for table cells */
-.table-cell {
-    -fx-border-color: none; /* Evita conflictos con bordes */
-    -fx-border-width: 0;
-    -fx-padding: 5px;
-    -fx-background-color: inherit; /* Usa el fondo original */
+/* Estilo para el fondo del formulario (login form) */
+.login-form {
+    -fx-background-color: dimgray; /* Fondo gris oscuro para el formulario */
+    -fx-padding: 40px; /* Espaciado alrededor de los elementos */
+    -fx-alignment: center; /* Centra el formulario */
+    -fx-border-radius: 25px; /* Bordes redondeados */
+}
+
+/* Estilo para el contenedor de los botones de "Olvidé mi contraseña" y otros */
+.button-container {
+    -fx-alignment: center;
+    -fx-spacing: 10px; /* Espaciado entre los botones */
+}
+
+/* Estilo para las celdas de la tabla */
+.table-row-cell {
+    -fx-background-color: #f4f4f4; /* Color de fondo de las filas */
+    -fx-border-color: #dddddd; /* Color del borde */
+    -fx-border-width: 1;
+}
+
+/* Efecto hover para las filas de la tabla */
+.table-row-cell:hover {
+    -fx-background-color: #e0e0e0; /* Color de fondo de las filas al pasar el ratón */
+}
+
+/* Estilo para las celdas de la tabla con imágenes */
+.table-cell .image-view {
+    -fx-background-color: transparent; /* Fondo transparente para imágenes */
+    -fx-alignment: center; /* Centrado de la imagen */
+}
+
+/* Estilo para los botones dentro de las celdas de la tabla */
+.table-cell .button {
+    -fx-background-color: #1db954; /* Fondo verde */
+    -fx-text-fill: white; /* Texto blanco */
+    -fx-font-size: 12px; /* Tamaño de fuente para el texto del botón */
+    -fx-cursor: hand; /* Cursor tipo mano */
+    -fx-padding: 5px 10px; /* Relleno dentro del botón */
+    -fx-background-radius: 20px; /* Bordes redondeados */
+}
+
+/* Efecto hover para los botones de la tabla */
+.table-cell .button:hover {
+    -fx-background-color: #1a9e48; /* Verde más oscuro al pasar el ratón */
 }

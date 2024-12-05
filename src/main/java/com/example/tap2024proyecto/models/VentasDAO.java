@@ -2,7 +2,7 @@ package com.example.tap2024proyecto.models;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
+import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -47,57 +47,181 @@ public class VentasDAO {
         this.totalVenta = totalVenta;
     }
 
-    // Método para insertar una venta
-    public int INSERT() {
-        int rowCount;
-        String query = "INSERT INTO tblVenta (idCliente, fechaVenta, totalVenta) VALUES (?, ?, ?)";
+    // Método para calcular el total de la venta basado en los precios de los productos
+    public double calcularTotalVenta(int[] idItems) {
+        double total = 0.0;
+        String query = "SELECT precio FROM tblCancion WHERE idCancion = ?";  // Asumimos que estamos vendiendo canciones
+
         try (Connection conn = Conexion.getConexion();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setInt(1, this.idCliente);
-            stmt.setString(2, this.fechaVenta);
-            stmt.setDouble(3, this.totalVenta);
-
-            rowCount = stmt.executeUpdate();
-            System.out.println("Venta registrada correctamente.");
+            for (int itemId : idItems) {
+                stmt.setInt(1, itemId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        total += rs.getDouble("precio");  // Acumulamos el precio de cada item
+                    }
+                }
+            }
         } catch (SQLException e) {
-            rowCount = 0;
-            System.err.println("Error al registrar venta:");
+            System.err.println("Error al calcular el total de la venta:");
             e.printStackTrace();
         }
-        return rowCount;
+        return total;
     }
 
-    // Método para actualizar una venta
-    public void UPDATE() {
-        String query = "UPDATE tblVenta SET idCliente = ?, fechaVenta = ?, totalVenta = ? WHERE idVenta = ?";
+    public int INSERT(int[] idsProductos) {
+        String queryVenta = "INSERT INTO tblVenta (idCliente, fechaVenta, totalVenta) VALUES (?, ?, ?)";
+        String queryDetalleVenta = "INSERT INTO tblDetalleVenta (idVenta, idCancion) VALUES (?, ?)";
+
         try (Connection conn = Conexion.getConexion();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmtVenta = conn.prepareStatement(queryVenta, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setInt(1, this.idCliente);
-            stmt.setString(2, this.fechaVenta);
-            stmt.setDouble(3, this.totalVenta);
-            stmt.setInt(4, this.idVenta);
+            // Insertar la venta
+            stmtVenta.setInt(1, this.getIdCliente());
+            stmtVenta.setString(2, this.getFechaVenta());
+            stmtVenta.setDouble(3, this.getTotalVenta());
 
-            stmt.executeUpdate();
+            int rows = stmtVenta.executeUpdate();
+
+            if (rows > 0) {
+                try (ResultSet generatedKeys = stmtVenta.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int idVentaGenerada = generatedKeys.getInt(1);
+
+                        // Insertar los productos asociados a la venta
+                        try (PreparedStatement stmtDetalle = conn.prepareStatement(queryDetalleVenta)) {
+                            for (int idProducto : idsProductos) {
+                                stmtDetalle.setInt(1, idVentaGenerada);
+                                stmtDetalle.setInt(2, idProducto);
+                                stmtDetalle.addBatch();
+                            }
+                            stmtDetalle.executeBatch();
+                        }
+                        return 1; // Venta y productos insertados correctamente
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al insertar la venta:");
+            e.printStackTrace();
+        }
+
+        return 0; // Error al insertar la venta
+    }
+
+    public int UPDATE(int[] idItems) {
+        int rowCount = 0;
+        double total = calcularTotalVenta(idItems);  // Recálculo del total con los nuevos items
+        String queryVenta = "UPDATE tblVenta SET idCliente = ?, fechaVenta = ?, totalVenta = ? WHERE idVenta = ?";
+
+        try (Connection conn = Conexion.getConexion()) {
+            // Actualizar la venta
+            try (PreparedStatement stmt = conn.prepareStatement(queryVenta)) {
+                stmt.setInt(1, this.idCliente);  // Establecemos el idCliente
+                stmt.setString(2, this.fechaVenta);  // Establecemos la fecha de venta
+                stmt.setDouble(3, total);  // Establecemos el total de la venta
+                stmt.setInt(4, this.idVenta);  // Establecemos el id de la venta (la venta a actualizar)
+
+                rowCount = stmt.executeUpdate();  // Ejecutar la actualización
+            }
+
+            // Si se actualizó la venta, actualizar los detalles
+            if (rowCount > 0) {
+                // Eliminar los detalles antiguos
+                eliminarDetallesVenta();
+
+                // Insertar los nuevos detalles
+                String queryDetalleVenta = "INSERT INTO tblDetalleVenta (idVenta, idCancion, idAlbum) VALUES (?, ?, ?)";
+                try (PreparedStatement stmtDetalle = conn.prepareStatement(queryDetalleVenta)) {
+                    for (int itemId : idItems) {
+                        stmtDetalle.setInt(1, this.idVenta);
+                        stmtDetalle.setInt(2, itemId);  // Suponemos que itemId es un idCancion (modificar si es un álbum)
+                        stmtDetalle.setNull(3, java.sql.Types.INTEGER); // El álbum puede ser nulo en el caso de compra de canciones
+
+                        stmtDetalle.addBatch(); // Usamos batch para eficiencia
+                    }
+
+                    // Ejecutamos el batch de inserciones
+                    stmtDetalle.executeBatch();
+                }
+
+                // Actualizar el stock de canciones
+                actualizarStock(idItems);
+            }
+
             System.out.println("Venta actualizada correctamente.");
         } catch (SQLException e) {
-            System.err.println("Error al actualizar venta:");
+            rowCount = 0;
+            System.err.println("Error al actualizar la venta:");
+            e.printStackTrace();
+        }
+        return rowCount;  // Devuelve el número de filas afectadas
+    }
+
+
+    // Método para eliminar los detalles de una venta
+    private void eliminarDetallesVenta() {
+        String queryDetalle = "DELETE FROM tblDetalleVenta WHERE idVenta = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(queryDetalle)) {
+
+            stmt.setInt(1, this.idVenta);
+            stmt.executeUpdate();  // Eliminamos los detalles de la venta
+            System.out.println("Detalles de la venta eliminados.");
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar los detalles de la venta:");
             e.printStackTrace();
         }
     }
 
     // Método para eliminar una venta
-    public void DELETE() {
-        String query = "DELETE FROM tblVenta WHERE idVenta = ?";
-        try (Connection conn = Conexion.getConexion();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+    public int DELETE() {
+        int rowCount = 0;
+        String queryDetalle = "DELETE FROM tblDetalleVenta WHERE idVenta = ?";  // Primero eliminamos los detalles
+        String queryVenta = "DELETE FROM tblVenta WHERE idVenta = ?";  // Luego eliminamos la venta
 
-            stmt.setInt(1, this.idVenta);
-            stmt.executeUpdate();
+        try (Connection conn = Conexion.getConexion()) {
+            // Eliminar los detalles de la venta
+            try (PreparedStatement stmtDetalle = conn.prepareStatement(queryDetalle)) {
+                stmtDetalle.setInt(1, this.idVenta);
+                stmtDetalle.executeUpdate();
+            }
+
+            // Eliminar la venta
+            try (PreparedStatement stmtVenta = conn.prepareStatement(queryVenta)) {
+                stmtVenta.setInt(1, this.idVenta);
+                rowCount = stmtVenta.executeUpdate();
+            }
+
             System.out.println("Venta eliminada correctamente.");
         } catch (SQLException e) {
-            System.err.println("Error al eliminar venta:");
+            rowCount = 0;
+            System.err.println("Error al eliminar la venta:");
+            e.printStackTrace();
+        }
+
+        return rowCount;  // Devuelve el número de filas afectadas
+    }
+
+    // Método para actualizar el stock de productos (canciones/álbumes)
+    public void actualizarStock(int[] idItems) {
+        String queryUpdateStock = "UPDATE tblCancion SET stock = stock - 1 WHERE idCancion = ?";  // Si los productos son canciones
+
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(queryUpdateStock)) {
+
+            for (int itemId : idItems) {
+                stmt.setInt(1, itemId);
+                stmt.addBatch();  // Añadimos al batch
+            }
+
+            // Ejecutamos el batch de actualizaciones de stock
+            stmt.executeBatch();
+            System.out.println("Stock actualizado correctamente.");
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar el stock de los productos:");
             e.printStackTrace();
         }
     }
@@ -126,42 +250,41 @@ public class VentasDAO {
         return listaVentas;
     }
 
-    // Método para obtener las canciones más vendidas
-    public ObservableList<CancionesMasVendidas> obtenerCancionesMasVendidas() {
-        ObservableList<CancionesMasVendidas> lista = FXCollections.observableArrayList();
-        String query = "SELECT c.tituloCancion, COUNT(dv.idVenta) AS ventas " +
-                "FROM tblCancion c " +
-                "JOIN tblDetalleVenta dv ON c.idCancion = dv.idCancion " +
-                "JOIN tblVenta v ON dv.idVenta = v.idVenta " +
-                "WHERE DATE_FORMAT(v.fechaVenta, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') " +
-                "GROUP BY c.tituloCancion " +
-                "ORDER BY ventas DESC " +
-                "LIMIT 10;";
+    // Método para obtener estadísticas de ventas mensuales
+    public ObservableList<VentasMensuales> obtenerVentasMensuales() {
+        ObservableList<VentasMensuales> lista = FXCollections.observableArrayList();
+        String query = "SELECT DATE_FORMAT(fechaVenta, '%Y-%m') AS mes, COUNT(*) AS cantidadVentas " +
+                "FROM tblVenta " +
+                "GROUP BY mes " +
+                "ORDER BY mes DESC";  // Agrupamos las ventas por mes
+
         try (Connection conn = Conexion.getConexion();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                lista.add(new CancionesMasVendidas(rs.getString("tituloCancion"), rs.getInt("ventas")));
+                lista.add(new VentasMensuales(rs.getString("mes"), rs.getInt("cantidadVentas")));
             }
         } catch (SQLException e) {
-            System.err.println("Error al obtener las canciones más vendidas:");
+            System.err.println("Error al obtener las ventas mensuales:");
             e.printStackTrace();
         }
         return lista;
     }
 
-    // Método para obtener los artistas con más ventas en el mes actual
+    // Método para obtener los artistas con más ventas
     public ObservableList<ArtistasVentas> obtenerArtistasConMasVentas() {
         ObservableList<ArtistasVentas> lista = FXCollections.observableArrayList();
-        String query = "SELECT a.nombreArtista, COUNT(v.idVenta) AS ventas " +
+        String query = "SELECT a.nombreArtista, COUNT(dv.idVenta) AS ventas " +
                 "FROM tblArtista a " +
                 "JOIN tblCancion c ON a.idArtista = c.idArtista " +
                 "JOIN tblDetalleVenta dv ON c.idCancion = dv.idCancion " +
                 "JOIN tblVenta v ON dv.idVenta = v.idVenta " +
                 "WHERE DATE_FORMAT(v.fechaVenta, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') " +
                 "GROUP BY a.nombreArtista " +
-                "ORDER BY ventas DESC;";
+                "ORDER BY ventas DESC " +
+                "LIMIT 10;";  // Limita la consulta a los 10 artistas más vendidos
+
         try (Connection conn = Conexion.getConexion();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
@@ -175,26 +298,50 @@ public class VentasDAO {
         }
         return lista;
     }
+    public ObservableList<CancionesMasVendidas> obtenerCancionesMasVendidas() {
+        ObservableList<CancionesMasVendidas> lista = FXCollections.observableArrayList();
+        String query = "SELECT c.tituloCancion, COUNT(dv.idVenta) AS ventas " +
+                "FROM tblCancion c " +
+                "JOIN tblDetalleVenta dv ON c.idCancion = dv.idCancion " +
+                "JOIN tblVenta v ON dv.idVenta = v.idVenta " +
+                "WHERE DATE_FORMAT(v.fechaVenta, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') " +
+                "GROUP BY c.tituloCancion " +
+                "ORDER BY ventas DESC " +
+                "LIMIT 10;";  // Limita la consulta a las 10 canciones más vendidas
 
-    // Método para obtener las ventas realizadas en el mes actual
-    public ObservableList<VentasMensuales> obtenerVentasMensuales() {
-        ObservableList<VentasMensuales> lista = FXCollections.observableArrayList();
-        String query = "SELECT DATE_FORMAT(fechaVenta, '%Y-%m') AS mes, COUNT(*) AS cantidad_ventas " +
-                "FROM tblVenta " +
-                "WHERE DATE_FORMAT(fechaVenta, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') " +
-                "GROUP BY mes;";
         try (Connection conn = Conexion.getConexion();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
+            // Recorrer los resultados y agregarlos a la lista
             while (rs.next()) {
-                lista.add(new VentasMensuales(rs.getString("mes"), rs.getInt("cantidad_ventas")));
+                lista.add(new CancionesMasVendidas(rs.getString("tituloCancion"), rs.getInt("ventas")));
             }
         } catch (SQLException e) {
-            System.err.println("Error al obtener las ventas mensuales:");
+            System.err.println("Error al obtener las canciones más vendidas:");
             e.printStackTrace();
         }
         return lista;
+    }
+
+
+    // Clase auxiliar para los artistas más vendidos
+    public static class ArtistasVentas {
+        private final String artista;
+        private final int ventas;
+
+        public ArtistasVentas(String artista, int ventas) {
+            this.artista = artista;
+            this.ventas = ventas;
+        }
+
+        public String getArtista() {
+            return artista;
+        }
+
+        public int getVentas() {
+            return ventas;
+        }
     }
 
     // Clases auxiliares para las estadísticas
@@ -213,24 +360,6 @@ public class VentasDAO {
 
         public int getCantidadVentas() {
             return cantidadVentas;
-        }
-    }
-
-    public static class ArtistasVentas {
-        private final String artista;
-        private final int ventas;
-
-        public ArtistasVentas(String artista, int ventas) {
-            this.artista = artista;
-            this.ventas = ventas;
-        }
-
-        public String getArtista() {
-            return artista;
-        }
-
-        public int getVentas() {
-            return ventas;
         }
     }
 

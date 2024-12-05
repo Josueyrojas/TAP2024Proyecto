@@ -6,7 +6,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import com.example.tap2024proyecto.models.ClienteDAO;
-import com.example.tap2024proyecto.components.ButtonCell;
+import com.example.tap2024proyecto.components.ButtonCellCliente;
 
 public class ListaClientes extends Stage {
     private TableView<ClienteDAO> tblCliente;
@@ -47,14 +47,15 @@ public class ListaClientes extends Stage {
         TableColumn<ClienteDAO, String> tbcPassword = new TableColumn<>("Contraseña");
         tbcPassword.setCellValueFactory(new PropertyValueFactory<>("password")); // Nuevo campo
 
+        // Usamos ButtonCellCliente para las columnas de acción (editar y eliminar)
         TableColumn<ClienteDAO, String> tbcEditar = new TableColumn<>("Editar");
-        tbcEditar.setCellFactory(param -> new ButtonCell<>("Editar", tblCliente));
+        tbcEditar.setCellFactory(param -> new ButtonCellCliente("Editar", tblCliente));
 
         TableColumn<ClienteDAO, String> tbcEliminar = new TableColumn<>("Eliminar");
-        tbcEliminar.setCellFactory(param -> new ButtonCell<>("Eliminar", tblCliente));
+        tbcEliminar.setCellFactory(param -> new ButtonCellCliente("Eliminar", tblCliente));
 
-        tblCliente.getColumns().addAll(tbcNombre, tbcTelefono, tbcEmail, tbcPassword, tbcEditar, tbcEliminar); // Agregar la columna de contraseña
-        tblCliente.setItems(new ClienteDAO().SELECTALL());
+        tblCliente.getColumns().addAll(tbcNombre, tbcTelefono, tbcEmail, tbcPassword, tbcEditar, tbcEliminar);
+        tblCliente.setItems(new ClienteDAO().SELECTALL());  // Cargar la lista de clientes
     }
 
     /**

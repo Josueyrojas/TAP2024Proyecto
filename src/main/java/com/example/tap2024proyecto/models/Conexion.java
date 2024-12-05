@@ -56,5 +56,11 @@ public class Conexion {
             e.printStackTrace();
         }
     }
+
+    public static Connection getConnection() {
+        CrearConexion(); // Garantiza que la conexión esté activa
+        return connection;
+    }
 }
+
 

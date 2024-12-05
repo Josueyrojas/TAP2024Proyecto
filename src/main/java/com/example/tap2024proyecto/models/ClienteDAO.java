@@ -152,7 +152,42 @@ public class ClienteDAO {
 
         return listaC;
     }
+
+    // Método para obtener un cliente por email y contraseña
+    public static ClienteDAO obtenerClientePorEmailYPassword(String email, String password) {
+        ClienteDAO cliente = null;
+        String query = "SELECT * FROM tblCliente WHERE emailCte = ? AND password = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, email);
+            stmt.setString(2, password);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                cliente = new ClienteDAO(
+                        rs.getInt("idCte"),
+                        rs.getString("nomCte"),
+                        rs.getString("telCte"),
+                        rs.getString("emailCte"),
+                        rs.getString("password")
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("Error al obtener cliente por email y contraseña:");
+            e.printStackTrace();
+        }
+        return cliente;
+    }
 }
+
+
+//cada renglón de la tabla representa un objeto de la clase Cliente
+
+
+
+
+//Buscaminas si es con archivos sin arreglos
 
 //cada renglón de la tabla representa un objeto de la clase Cliente
 
