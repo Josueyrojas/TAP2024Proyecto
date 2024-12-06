@@ -1,19 +1,26 @@
 package com.example.tap2024proyecto.vistas;
 
+import com.example.tap2024proyecto.models.AlbumDAO;
+import com.example.tap2024proyecto.models.CancionDAO;
+import com.example.tap2024proyecto.models.ClienteDAO;
+import com.example.tap2024proyecto.models.VentasDAO;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import com.example.tap2024proyecto.models.VentasDAO;
 
 public class VistaCliente extends Stage {
     private Scene scene;
     private BorderPane contenidoPrincipal;
+    private ClienteDAO clienteActual; // Cliente logueado
 
-    public VistaCliente() {
+    public VistaCliente(ClienteDAO cliente) {
+        this.clienteActual = cliente;
         crearUI();
         this.setTitle("Cliente - Panel de Usuario");
         this.setScene(scene);
@@ -21,7 +28,6 @@ public class VistaCliente extends Stage {
     }
 
     private void crearUI() {
-        // Menú lateral
         VBox menuLateral = new VBox(10);
         menuLateral.setPadding(new Insets(10));
         menuLateral.setStyle("-fx-background-color: #2A2A2A;");
@@ -34,7 +40,6 @@ public class VistaCliente extends Stage {
         Button btnDatosPersonales = new Button("Mis Datos");
         Button btnCerrarSesion = new Button("Cerrar Sesion");
 
-        // Estilo para los botones
         btnComprar.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
         btnHistorial.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
         btnDatosPersonales.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
@@ -42,21 +47,17 @@ public class VistaCliente extends Stage {
 
         menuLateral.getChildren().addAll(lblMenu, btnComprar, btnHistorial, btnDatosPersonales, btnCerrarSesion);
 
-        // Área principal (contenido dinámico)
         contenidoPrincipal = new BorderPane();
         Label lblBienvenida = new Label("Bienvenido, selecciona una opción del menú.");
         lblBienvenida.setStyle("-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #333;");
         contenidoPrincipal.setCenter(lblBienvenida);
 
-        // Layout principal
         BorderPane layoutPrincipal = new BorderPane();
         layoutPrincipal.setLeft(menuLateral);
         layoutPrincipal.setCenter(contenidoPrincipal);
 
-        // Escena
         scene = new Scene(layoutPrincipal, 1000, 600);
 
-        // Acciones de los botones
         btnComprar.setOnAction(e -> cargarVistaComprar());
         btnHistorial.setOnAction(e -> cargarHistorialCompras());
         btnDatosPersonales.setOnAction(e -> cargarDatosPersonales());
@@ -65,27 +66,101 @@ public class VistaCliente extends Stage {
 
     private void cerrarSesion() {
         new Login(); // Regresa a la pantalla de login
-        this.close(); // Cierra la vista del administrador
-
+        this.close();
     }
 
     private void cargarVistaComprar() {
+        // Contenedor principal vertical
         VBox contenido = new VBox(10);
         contenido.setPadding(new Insets(10));
 
         Label lblTitulo = new Label("Comprar Canciones o Álbumes");
         lblTitulo.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
 
-        // Aquí se pueden agregar elementos como listas de canciones/álbumes disponibles para compra
-        // Por ahora es solo un placeholder
-        ListView<String> listaCompra = new ListView<>();
-        listaCompra.getItems().addAll("Canción 1", "Canción 2", "Álbum 1", "Álbum 2");
+        // Crear el TabPane
+        TabPane tabPane = new TabPane();
 
+        // Tab para Albums
+        Tab tabAlbumes = new Tab("Álbumes");
+        tabAlbumes.setClosable(false);
+
+        // Crear tabla para Albums
+        TableView<AlbumDAO> tblAlbumes = new TableView<>();
+        TableColumn<AlbumDAO, Integer> colIdAlbum = new TableColumn<>("ID");
+        colIdAlbum.setCellValueFactory(new PropertyValueFactory<>("idAlbum"));
+
+        TableColumn<AlbumDAO, String> colTituloAlbum = new TableColumn<>("Título");
+        colTituloAlbum.setCellValueFactory(new PropertyValueFactory<>("tituloAlbum"));
+
+        TableColumn<AlbumDAO, String> colFechaAlbum = new TableColumn<>("Fecha");
+        colFechaAlbum.setCellValueFactory(new PropertyValueFactory<>("fechaAlbum"));
+
+        TableColumn<AlbumDAO, Double> colCostoAlbum = new TableColumn<>("Costo");
+        colCostoAlbum.setCellValueFactory(new PropertyValueFactory<>("costoAlbum"));
+
+        // Columna para mostrar las imágenes
+        TableColumn<AlbumDAO, String> colImagenAlbum = new TableColumn<>("Imagen");
+        colImagenAlbum.setCellValueFactory(new PropertyValueFactory<>("imagenAlbum"));
+
+        colImagenAlbum.setCellFactory(col -> new TableCell<AlbumDAO, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    // Crear un ImageView con la ruta de la imagen
+                    Image image = new Image(item);
+                    ImageView imageView = new ImageView(image);
+                    imageView.setFitHeight(50); // Ajustar altura
+                    imageView.setFitWidth(50);  // Ajustar ancho
+                    setGraphic(imageView);     // Asignar el ImageView como gráfico de la celda
+                }
+            }
+        });
+
+        tblAlbumes.getColumns().addAll(colIdAlbum, colTituloAlbum, colFechaAlbum, colCostoAlbum, colImagenAlbum);
+
+        // Cargar datos de álbumes
+        AlbumDAO albumDAO = new AlbumDAO();
+        tblAlbumes.setItems(albumDAO.SELECTALL());
+
+        tabAlbumes.setContent(tblAlbumes);
+
+        // Tab para Canciones
+        Tab tabCanciones = new Tab("Canciones");
+        tabCanciones.setClosable(false);
+
+        // Crear tabla para Canciones
+        TableView<CancionDAO> tblCanciones = new TableView<>();
+        TableColumn<CancionDAO, Integer> colIdCancion = new TableColumn<>("ID");
+        colIdCancion.setCellValueFactory(new PropertyValueFactory<>("idCancion"));
+
+        TableColumn<CancionDAO, String> colTituloCancion = new TableColumn<>("Título");
+        colTituloCancion.setCellValueFactory(new PropertyValueFactory<>("tituloCan"));
+
+        TableColumn<CancionDAO, Double> colCostoCancion = new TableColumn<>("Costo");
+        colCostoCancion.setCellValueFactory(new PropertyValueFactory<>("costoCancion"));
+
+        tblCanciones.getColumns().addAll(colIdCancion, colTituloCancion, colCostoCancion);
+
+        // Cargar datos de canciones
+        CancionDAO cancionDAO = new CancionDAO();
+        tblCanciones.setItems(cancionDAO.SELECTALL());
+
+        tabCanciones.setContent(tblCanciones);
+
+        // Agregar las tabs al tabPane
+        tabPane.getTabs().addAll(tabAlbumes, tabCanciones);
+
+        // Botón para comprar (al seleccionar ítems)
         Button btnComprar = new Button("Comprar");
         btnComprar.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
-        btnComprar.setOnAction(e -> mostrarAlerta("Compra realizada", "Has comprado los artículos seleccionados."));
+        btnComprar.setOnAction(e -> {
+            mostrarAlerta("Compra", "Funcionalidad de compra en construcción.");
+        });
 
-        contenido.getChildren().addAll(lblTitulo, listaCompra, btnComprar);
+        contenido.getChildren().addAll(lblTitulo, tabPane, btnComprar);
         contenidoPrincipal.setCenter(contenido);
     }
 
@@ -108,8 +183,6 @@ public class VistaCliente extends Stage {
         colTotal.setCellValueFactory(new PropertyValueFactory<>("totalVenta"));
 
         tblHistorial.getColumns().addAll(colIdVenta, colFecha, colTotal);
-
-        // Cargar datos en la tabla
         tblHistorial.setItems(new VentasDAO().SELECTALL());
 
         contenido.getChildren().addAll(lblTitulo, tblHistorial);
@@ -123,14 +196,18 @@ public class VistaCliente extends Stage {
         Label lblTitulo = new Label("Mis Datos Personales");
         lblTitulo.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
 
-        // Mostrar datos personales (placeholders por ahora)
-        Label lblNombre = new Label("Nombre: Juan Pérez");
-        Label lblCorreo = new Label("Correo: juan.perez@example.com");
-        Label lblTelefono = new Label("Teléfono: 123-456-7890");
+        Label lblNombre = new Label("Nombre: " + clienteActual.getNomCte());
+        Label lblCorreo = new Label("Correo: " + clienteActual.getEmailCte());
+        Label lblTelefono = new Label("Teléfono: " + clienteActual.getTelCte());
 
         Button btnEditar = new Button("Editar Datos");
         btnEditar.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
-        btnEditar.setOnAction(e -> mostrarAlerta("Editar Datos", "Funcionalidad para editar datos en construcción."));
+        btnEditar.setOnAction(e -> {
+            FormCliente form = new FormCliente(null, clienteActual);
+            form.setOnHidden(evt -> {
+                cargarDatosPersonales();
+            });
+        });
 
         contenido.getChildren().addAll(lblTitulo, lblNombre, lblCorreo, lblTelefono, btnEditar);
         contenidoPrincipal.setCenter(contenido);

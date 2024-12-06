@@ -1,5 +1,6 @@
 package com.example.tap2024proyecto.vistas;
 
+import com.example.tap2024proyecto.models.ClienteDAO;
 import com.example.tap2024proyecto.models.LoginDAO;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -56,7 +57,37 @@ public class Login extends Stage {
         scene = new Scene(vbox, 400, 400); // Ajusta el tamaño de la ventana
         scene.getStylesheets().add(getClass().getResource("/styles/spotify.css").toExternalForm());
     }
+    /*
+        private void autenticarUsuario() {
+            String username = txtUsername.getText();
+            String password = txtPassword.getText();
 
+            if (username.isEmpty() || password.isEmpty()) {
+                lblError.setText("Please fill in all fields.");
+                return;
+            }
+
+            // Verificar rol del usuario
+            String rol = loginDAO.autenticar(username, password);
+            if (rol != null) {
+                switch (rol) {
+                    case "administrador":
+                        new VistaAdministrador(); // Abre la vista de administrador
+                        break;
+                    case "cliente":
+                        new VistaCliente(); // Abre la vista de cliente
+                        break;
+                    default:
+                        lblError.setText("Unknown role.");
+                        return;
+                }
+                this.close(); // Cierra la ventana de login
+            } else {
+                lblError.setText("Invalid username or password.");
+            }
+        }
+
+     */
     private void autenticarUsuario() {
         String username = txtUsername.getText();
         String password = txtPassword.getText();
@@ -72,17 +103,26 @@ public class Login extends Stage {
             switch (rol) {
                 case "administrador":
                     new VistaAdministrador(); // Abre la vista de administrador
+                    this.close(); // Cierra la ventana de login
                     break;
                 case "cliente":
-                    new VistaCliente(); // Abre la vista de cliente
+                    // Obtener los datos del cliente
+                    ClienteDAO cliente = ClienteDAO.obtenerClientePorEmailYPassword(username, password);
+                    if (cliente != null) {
+                        new VistaCliente(cliente); // Pasa el objeto cliente a la vista de cliente
+                        this.close(); // Cierra la ventana de login
+                    } else {
+                        lblError.setText("Error retrieving client data.");
+                    }
                     break;
                 default:
                     lblError.setText("Unknown role.");
                     return;
             }
-            this.close(); // Cierra la ventana de login
         } else {
             lblError.setText("Invalid username or password.");
         }
     }
+
+
 }
