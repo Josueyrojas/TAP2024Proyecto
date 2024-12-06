@@ -1,5 +1,7 @@
 package com.example.tap2024proyecto.vistas;
 
+import com.example.tap2024proyecto.models.ClienteDAO;
+import com.example.tap2024proyecto.models.VentasDAO;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -7,13 +9,14 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import com.example.tap2024proyecto.models.VentasDAO;
 
 public class VistaCliente extends Stage {
     private Scene scene;
     private BorderPane contenidoPrincipal;
+    private ClienteDAO clienteActual; // Cliente logueado
 
-    public VistaCliente() {
+    public VistaCliente(ClienteDAO cliente) {
+        this.clienteActual = cliente;
         crearUI();
         this.setTitle("Cliente - Panel de Usuario");
         this.setScene(scene);
@@ -21,7 +24,6 @@ public class VistaCliente extends Stage {
     }
 
     private void crearUI() {
-        // Menú lateral
         VBox menuLateral = new VBox(10);
         menuLateral.setPadding(new Insets(10));
         menuLateral.setStyle("-fx-background-color: #2A2A2A;");
@@ -34,7 +36,6 @@ public class VistaCliente extends Stage {
         Button btnDatosPersonales = new Button("Mis Datos");
         Button btnCerrarSesion = new Button("Cerrar Sesion");
 
-        // Estilo para los botones
         btnComprar.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
         btnHistorial.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
         btnDatosPersonales.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
@@ -42,21 +43,17 @@ public class VistaCliente extends Stage {
 
         menuLateral.getChildren().addAll(lblMenu, btnComprar, btnHistorial, btnDatosPersonales, btnCerrarSesion);
 
-        // Área principal (contenido dinámico)
         contenidoPrincipal = new BorderPane();
         Label lblBienvenida = new Label("Bienvenido, selecciona una opción del menú.");
         lblBienvenida.setStyle("-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #333;");
         contenidoPrincipal.setCenter(lblBienvenida);
 
-        // Layout principal
         BorderPane layoutPrincipal = new BorderPane();
         layoutPrincipal.setLeft(menuLateral);
         layoutPrincipal.setCenter(contenidoPrincipal);
 
-        // Escena
         scene = new Scene(layoutPrincipal, 1000, 600);
 
-        // Acciones de los botones
         btnComprar.setOnAction(e -> cargarVistaComprar());
         btnHistorial.setOnAction(e -> cargarHistorialCompras());
         btnDatosPersonales.setOnAction(e -> cargarDatosPersonales());
@@ -65,8 +62,7 @@ public class VistaCliente extends Stage {
 
     private void cerrarSesion() {
         new Login(); // Regresa a la pantalla de login
-        this.close(); // Cierra la vista del administrador
-
+        this.close();
     }
 
     private void cargarVistaComprar() {
@@ -76,8 +72,6 @@ public class VistaCliente extends Stage {
         Label lblTitulo = new Label("Comprar Canciones o Álbumes");
         lblTitulo.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
 
-        // Aquí se pueden agregar elementos como listas de canciones/álbumes disponibles para compra
-        // Por ahora es solo un placeholder
         ListView<String> listaCompra = new ListView<>();
         listaCompra.getItems().addAll("Canción 1", "Canción 2", "Álbum 1", "Álbum 2");
 
@@ -108,8 +102,6 @@ public class VistaCliente extends Stage {
         colTotal.setCellValueFactory(new PropertyValueFactory<>("totalVenta"));
 
         tblHistorial.getColumns().addAll(colIdVenta, colFecha, colTotal);
-
-        // Cargar datos en la tabla
         tblHistorial.setItems(new VentasDAO().SELECTALL());
 
         contenido.getChildren().addAll(lblTitulo, tblHistorial);
@@ -123,14 +115,23 @@ public class VistaCliente extends Stage {
         Label lblTitulo = new Label("Mis Datos Personales");
         lblTitulo.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
 
-        // Mostrar datos personales (placeholders por ahora)
-        Label lblNombre = new Label("Nombre: Juan Pérez");
-        Label lblCorreo = new Label("Correo: juan.perez@example.com");
-        Label lblTelefono = new Label("Teléfono: 123-456-7890");
+        Label lblNombre = new Label("Nombre: " + clienteActual.getNomCte());
+        Label lblCorreo = new Label("Correo: " + clienteActual.getEmailCte());
+        Label lblTelefono = new Label("Teléfono: " + clienteActual.getTelCte());
 
         Button btnEditar = new Button("Editar Datos");
         btnEditar.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
-        btnEditar.setOnAction(e -> mostrarAlerta("Editar Datos", "Funcionalidad para editar datos en construcción."));
+        btnEditar.setOnAction(e -> {
+            FormCliente form = new FormCliente(null, clienteActual);
+            // Cuando se cierre el formulario, podemos actualizar los datos en la vista:
+            form.setOnHidden(evt -> {
+                // Se asume que el clienteActual ya fue actualizado en la BD
+                // Recargamos datos desde la BD si se desea o simplemente refrescamos el contenido
+                // Si queremos volver a cargar la info actualizada:
+                // clienteActual = ClienteDAO.obtenerClientePorEmailYPassword(clienteActual.getEmailCte(), clienteActual.getPassword());
+                cargarDatosPersonales();
+            });
+        });
 
         contenido.getChildren().addAll(lblTitulo, lblNombre, lblCorreo, lblTelefono, btnEditar);
         contenidoPrincipal.setCenter(contenido);

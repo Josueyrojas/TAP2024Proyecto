@@ -28,7 +28,7 @@ public class FormCliente extends Stage {
             txtNomCte.setText(objCte.getNomCte());
             txtEmailCte.setText(objCte.getEmailCte());
             txtTelCte.setText(objCte.getTelCte());
-            txtPassword.setText(objCte.getPassword()); // Establecer contraseña existente
+            txtPassword.setText(objCte.getPassword());
             this.setTitle("Editar Cliente :)");
         } else {
             this.objCte = new ClienteDAO();
@@ -49,32 +49,34 @@ public class FormCliente extends Stage {
         txtTelCte.setPromptText("Teléfono del cliente");
 
         txtPassword = new PasswordField();
-        txtPassword.setPromptText("Contraseña del cliente"); // Nuevo campo para contraseña
+        txtPassword.setPromptText("Contraseña del cliente");
 
         btnGuardar = new Button("Guardar");
         btnGuardar.setOnAction(actionEvent -> GuardarCliente());
 
-        vBox = new VBox(txtNomCte, txtEmailCte, txtTelCte, txtPassword, btnGuardar); // Agregar el nuevo campo
+        vBox = new VBox(txtNomCte, txtEmailCte, txtTelCte, txtPassword, btnGuardar);
         vBox.setPadding(new Insets(10));
         vBox.setSpacing(10);
 
-        escena = new Scene(vBox, 300, 200); // Ajustar el tamaño de la ventana
+        escena = new Scene(vBox, 300, 200);
     }
 
     private void GuardarCliente() {
         objCte.setEmailCte(txtEmailCte.getText());
         objCte.setNomCte(txtNomCte.getText());
         objCte.setTelCte(txtTelCte.getText());
-        objCte.setPassword(txtPassword.getText()); // Guardar la contraseña
+        objCte.setPassword(txtPassword.getText());
 
         String msj;
         Alert.AlertType type;
 
         if (objCte.getIdCte() > 0) {
+            // Actualizar
             objCte.UPDATE();
             msj = "Registro actualizado";
             type = Alert.AlertType.INFORMATION;
         } else {
+            // Insertar
             if (objCte.INSERT() > 0) {
                 msj = "Registro insertado";
                 type = Alert.AlertType.INFORMATION;
@@ -89,8 +91,12 @@ public class FormCliente extends Stage {
         alerta.setContentText(msj);
         alerta.showAndWait();
 
-        tbvCliente.setItems(objCte.SELECTALL());
-        tbvCliente.refresh();
+        // Si tbvCliente no es nulo, se actualiza la tabla:
+        if (tbvCliente != null) {
+            tbvCliente.setItems(objCte.SELECTALL());
+            tbvCliente.refresh();
+        }
+
         this.close();
     }
 }
