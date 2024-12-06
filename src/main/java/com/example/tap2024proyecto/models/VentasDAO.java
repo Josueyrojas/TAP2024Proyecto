@@ -71,14 +71,14 @@ public class VentasDAO {
     }
 
     public int INSERT(int[] idsProductos) {
-        String queryVenta = "INSERT INTO tblVenta (idCliente, fechaVenta, totalVenta) VALUES (?, ?, ?)";
+        String queryVenta = "INSERT INTO tblVenta (idCte, fechaVenta, totalVenta) VALUES (?, ?, ?)";
         String queryDetalleVenta = "INSERT INTO tblDetalleVenta (idVenta, idCancion) VALUES (?, ?)";
 
         try (Connection conn = Conexion.getConexion();
              PreparedStatement stmtVenta = conn.prepareStatement(queryVenta, Statement.RETURN_GENERATED_KEYS)) {
 
             // Insertar la venta
-            stmtVenta.setInt(1, this.getIdCliente());
+            stmtVenta.setInt(1, this.getIdCliente()); // Asegúrate también que getIdCliente() devuelva el mismo valor que idCte del cliente logueado
             stmtVenta.setString(2, this.getFechaVenta());
             stmtVenta.setDouble(3, this.getTotalVenta());
 

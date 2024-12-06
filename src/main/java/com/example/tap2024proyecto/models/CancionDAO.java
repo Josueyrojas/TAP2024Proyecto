@@ -32,22 +32,22 @@ public class CancionDAO {
         this.idAlbum = idAlbum;
         this.idArtista = idArtista; // Inicializar la nueva propiedad
     }
-    public List<String> obtenerCancionesPorAlbum(int idAlbum) {
-        List<String> canciones = new ArrayList<>();
-        try (Connection con = Conexion.getConnection()) {
-            String query = "SELECT nombreCancion FROM canciones WHERE idAlbum = ?";
-            PreparedStatement pst = con.prepareStatement(query);
-            pst.setInt(1, idAlbum);
-            ResultSet rs = pst.executeQuery();
+        public List<String> obtenerCancionesPorAlbum(int idAlbum) {
+            List<String> canciones = new ArrayList<>();
+            try (Connection con = Conexion.getConnection()) {
+                String query = "SELECT nombreCancion FROM canciones WHERE idAlbum = ?";
+                PreparedStatement pst = con.prepareStatement(query);
+                pst.setInt(1, idAlbum);
+                ResultSet rs = pst.executeQuery();
 
-            while (rs.next()) {
-                canciones.add(rs.getString("nombreCancion"));
+                while (rs.next()) {
+                    canciones.add(rs.getString("nombreCancion"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            return canciones;
         }
-        return canciones;
-    }
 
     // Getters y Setters
     public int getIdCancion() {
@@ -224,4 +224,30 @@ public class CancionDAO {
         }
         return false;
     }
+
+    public ObservableList<CancionDAO> obtenerCancionesDeAlbum(int idAlbum) {
+        ObservableList<CancionDAO> lista = FXCollections.observableArrayList();
+        String query = "SELECT * FROM tblCancion WHERE idAlbum = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, idAlbum);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                CancionDAO cancion = new CancionDAO(
+                        rs.getInt("idCancion"),
+                        rs.getString("tituloCan"),
+                        rs.getDouble("costoCan"),
+                        rs.getInt("idGenero"),
+                        rs.getInt("idAlbum"),
+                        rs.getInt("idArtista")
+                );
+                lista.add(cancion);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+
 }
