@@ -1,7 +1,7 @@
 package com.example.tap2024proyecto.vistas;
 
-import com.example.tap2024proyecto.models.LoginDAO;
 import com.example.tap2024proyecto.models.ClienteDAO;
+import com.example.tap2024proyecto.models.LoginDAO;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -15,7 +15,6 @@ public class Login extends Stage {
     private TextField txtUsername;
     private PasswordField txtPassword;
     private Button btnLogin;
-    private Button btnRegister; // Nuevo botón para registrarse
     private Label lblError;
     private LoginDAO loginDAO;
 
@@ -47,23 +46,18 @@ public class Login extends Stage {
         btnLogin.getStyleClass().add("sign-in-btn");
         btnLogin.setOnAction(event -> autenticarUsuario());
 
-        // Botón de registro
-        btnRegister = new Button("Register");
-        btnRegister.getStyleClass().add("sign-in-btn");
-        btnRegister.setOnAction(event -> abrirFormularioRegistro());
-
         // Label para mensajes de error
         lblError = new Label();
         lblError.getStyleClass().add("label");
 
         // Diseño del VBox
-        VBox vbox = new VBox(10, logo, txtUsername, txtPassword, btnLogin, btnRegister, lblError);
+        VBox vbox = new VBox(10, logo, txtUsername, txtPassword, btnLogin, lblError);
         vbox.setAlignment(Pos.CENTER);
         vbox.setStyle("-fx-background-color: black; -fx-padding: 20;");
-        scene = new Scene(vbox, 400, 400);
+        scene = new Scene(vbox, 400, 400); // Ajusta el tamaño de la ventana
         scene.getStylesheets().add(getClass().getResource("/styles/spotify.css").toExternalForm());
     }
-
+/*
     private void autenticarUsuario() {
         String username = txtUsername.getText();
         String password = txtPassword.getText();
@@ -81,13 +75,7 @@ public class Login extends Stage {
                     new VistaAdministrador(); // Abre la vista de administrador
                     break;
                 case "cliente":
-                    // Obtener el cliente que se logueó
-                    ClienteDAO cliente = ClienteDAO.obtenerClientePorEmailYPassword(username, password);
-                    if (cliente != null) {
-                        new VistaCliente(cliente); // Abre la vista de cliente con el cliente logueado
-                    } else {
-                        lblError.setText("Error retrieving client data.");
-                    }
+                    new VistaCliente(); // Abre la vista de cliente
                     break;
                 default:
                     lblError.setText("Unknown role.");
@@ -97,11 +85,44 @@ public class Login extends Stage {
         } else {
             lblError.setText("Invalid username or password.");
         }
-    }//
-
-    private void abrirFormularioRegistro() {
-        // Abrir el formulario para registrar un nuevo cliente
-        // Como no le pasamos un ClienteDAO, se crea uno nuevo (agregar).
-        new FormCliente(null, null);
     }
+
+ */
+private void autenticarUsuario() {
+    String username = txtUsername.getText();
+    String password = txtPassword.getText();
+
+    if (username.isEmpty() || password.isEmpty()) {
+        lblError.setText("Please fill in all fields.");
+        return;
+    }
+
+    // Verificar rol del usuario
+    String rol = loginDAO.autenticar(username, password);
+    if (rol != null) {
+        switch (rol) {
+            case "administrador":
+                new VistaAdministrador(); // Abre la vista de administrador
+                this.close(); // Cierra la ventana de login
+                break;
+            case "cliente":
+                // Obtener los datos del cliente
+                ClienteDAO cliente = ClienteDAO.obtenerClientePorEmailYPassword(username, password);
+                if (cliente != null) {
+                    new VistaCliente(cliente); // Pasa el objeto cliente a la vista de cliente
+                    this.close(); // Cierra la ventana de login
+                } else {
+                    lblError.setText("Error retrieving client data.");
+                }
+                break;
+            default:
+                lblError.setText("Unknown role.");
+                return;
+        }
+    } else {
+        lblError.setText("Invalid username or password.");
+    }
+}
+
+
 }

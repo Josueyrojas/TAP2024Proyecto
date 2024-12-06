@@ -4,14 +4,10 @@ import com.example.tap2024proyecto.models.AlbumDAO;
 import com.example.tap2024proyecto.models.CancionDAO;
 import com.example.tap2024proyecto.models.ClienteDAO;
 import com.example.tap2024proyecto.models.VentasDAO;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -72,21 +68,22 @@ public class VistaCliente extends Stage {
     }
 
     private void cargarVistaComprar() {
+        // Contenedor principal vertical
         VBox contenido = new VBox(10);
         contenido.setPadding(new Insets(10));
 
         Label lblTitulo = new Label("Comprar Canciones o Álbumes");
         lblTitulo.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
 
+        // Crear el TabPane
         TabPane tabPane = new TabPane();
 
-        // Tab Álbumes
+        // Tab para Albums
         Tab tabAlbumes = new Tab("Álbumes");
         tabAlbumes.setClosable(false);
 
+        // Crear tabla para Albums
         TableView<AlbumDAO> tblAlbumes = new TableView<>();
-        tblAlbumes.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
         TableColumn<AlbumDAO, Integer> colIdAlbum = new TableColumn<>("ID");
         colIdAlbum.setCellValueFactory(new PropertyValueFactory<>("idAlbum"));
 
@@ -99,46 +96,20 @@ public class VistaCliente extends Stage {
         TableColumn<AlbumDAO, Double> colCostoAlbum = new TableColumn<>("Costo");
         colCostoAlbum.setCellValueFactory(new PropertyValueFactory<>("costoAlbum"));
 
-        // Columna para mostrar la imagen del álbum
-        TableColumn<AlbumDAO, String> colImagenAlbum = new TableColumn<>("Imagen");
-        colImagenAlbum.setCellValueFactory(new PropertyValueFactory<>("imagenAlbum"));
-        colImagenAlbum.setCellFactory(param -> new TableCell<AlbumDAO, String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    ImageView imageView = new ImageView();
-                    try {
-                        // Cargar la imagen desde la ruta proporcionada en la base de datos
-                        Image image = new Image("file:" + item); // Asume que la ruta es local
-                        imageView.setImage(image);
-                        imageView.setFitWidth(100); // Ajusta el tamaño de la imagen
-                        imageView.setFitHeight(100);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    setGraphic(imageView);
-                }
-            }
-        });
+        tblAlbumes.getColumns().addAll(colIdAlbum, colTituloAlbum, colFechaAlbum, colCostoAlbum);
 
-        tblAlbumes.getColumns().addAll(colIdAlbum, colTituloAlbum, colFechaAlbum, colCostoAlbum, colImagenAlbum);
-
+        // Cargar datos de álbumes
         AlbumDAO albumDAO = new AlbumDAO();
         tblAlbumes.setItems(albumDAO.SELECTALL());
 
         tabAlbumes.setContent(tblAlbumes);
 
-
-        // Tab Canciones
+        // Tab para Canciones
         Tab tabCanciones = new Tab("Canciones");
         tabCanciones.setClosable(false);
 
+        // Crear tabla para Canciones
         TableView<CancionDAO> tblCanciones = new TableView<>();
-        tblCanciones.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
         TableColumn<CancionDAO, Integer> colIdCancion = new TableColumn<>("ID");
         colIdCancion.setCellValueFactory(new PropertyValueFactory<>("idCancion"));
 
@@ -150,76 +121,31 @@ public class VistaCliente extends Stage {
 
         tblCanciones.getColumns().addAll(colIdCancion, colTituloCancion, colCostoCancion);
 
+        // Cargar datos de canciones
         CancionDAO cancionDAO = new CancionDAO();
         tblCanciones.setItems(cancionDAO.SELECTALL());
 
         tabCanciones.setContent(tblCanciones);
 
+        // Agregar las tabs al tabPane
         tabPane.getTabs().addAll(tabAlbumes, tabCanciones);
 
+        // Botón para comprar (al seleccionar ítems)
         Button btnComprar = new Button("Comprar");
         btnComprar.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
         btnComprar.setOnAction(e -> {
-            // Obtener selección de álbumes y canciones
-            ObservableList<AlbumDAO> albumesSeleccionados = tblAlbumes.getSelectionModel().getSelectedItems();
-            ObservableList<CancionDAO> cancionesSeleccionadas = tblCanciones.getSelectionModel().getSelectedItems();
-
-            if (albumesSeleccionados.isEmpty() && cancionesSeleccionadas.isEmpty()) {
-                mostrarAlerta("Sin selección", "No has seleccionado ningún elemento para comprar.");
-                return;
-            }
-
-            // Construimos una lista de ids de canciones finales
-            ObservableList<Integer> idsCancionesCompra = FXCollections.observableArrayList();
-            double totalVenta = 0.0;
-
-            // Agregar canciones de álbumes seleccionados
-            for (AlbumDAO albumSel : albumesSeleccionados) {
-                // Obtener las canciones del álbum
-                ObservableList<CancionDAO> cancionesDeAlbum = cancionDAO.obtenerCancionesDeAlbum(albumSel.getIdAlbum());
-                if (cancionesDeAlbum.isEmpty()) {
-                    // Si el álbum no tiene canciones, podríamos tratarlo como sin costo o ignorarlo
-                    // Aquí asumimos que un álbum siempre tendrá al menos una canción.
-                    continue;
-                }
-                // Sumar el costo de todas las canciones del álbum
-                for (CancionDAO cancionAlbum : cancionesDeAlbum) {
-                    idsCancionesCompra.add(cancionAlbum.getIdCancion());
-                    totalVenta += cancionAlbum.getCostoCancion();
-                }
-            }
-
-            // Agregar las canciones seleccionadas directamente
-            for (CancionDAO cancionSel : cancionesSeleccionadas) {
-                idsCancionesCompra.add(cancionSel.getIdCancion());
-                totalVenta += cancionSel.getCostoCancion();
-            }
-
-            if (idsCancionesCompra.isEmpty()) {
-                mostrarAlerta("Sin Canciones", "No se encontraron canciones para el ítem seleccionado.");
-                return;
-            }
-
-            // Crear el objeto venta
-            VentasDAO venta = new VentasDAO();
-            venta.setIdCliente(clienteActual.getIdCte()); // ID del cliente logueado
-            venta.setFechaVenta(java.time.LocalDate.now().toString()); // Fecha actual
-            venta.setTotalVenta(totalVenta);
-
-            // Convertir a array de int
-            int[] idsProductos = idsCancionesCompra.stream().mapToInt(Integer::intValue).toArray();
-
-            if (venta.INSERT(idsProductos) > 0) {
-                mostrarAlerta("Compra realizada", "Has comprado los artículos seleccionados.");
-            } else {
-                mostrarAlerta("Error", "Ocurrió un error al realizar la compra.");
-            }
+            // Aquí podrías obtener los ítems seleccionados y realizar la lógica de compra
+            // Por ejemplo, si el usuario selecciona un álbum o canción en la tabla correspondiente
+            // Podrías hacer algo como:
+            // AlbumDAO seleccionadoAlbum = tblAlbumes.getSelectionModel().getSelectedItem();
+            // CancionDAO seleccionadaCancion = tblCanciones.getSelectionModel().getSelectedItem();
+            // Implementar la lógica de compra según el caso
+            mostrarAlerta("Compra", "Funcionalidad de compra en construcción.");
         });
 
         contenido.getChildren().addAll(lblTitulo, tabPane, btnComprar);
         contenidoPrincipal.setCenter(contenido);
     }
-
 
 
     private void cargarHistorialCompras() {
@@ -241,14 +167,11 @@ public class VistaCliente extends Stage {
         colTotal.setCellValueFactory(new PropertyValueFactory<>("totalVenta"));
 
         tblHistorial.getColumns().addAll(colIdVenta, colFecha, colTotal);
-
-        // Cargar datos en la tabla filtrando por cliente actual
-        tblHistorial.setItems(new VentasDAO().SELECTBYCLIENTE(clienteActual.getIdCte()));
+        tblHistorial.setItems(new VentasDAO().SELECTALL());
 
         contenido.getChildren().addAll(lblTitulo, tblHistorial);
         contenidoPrincipal.setCenter(contenido);
     }
-
 
     private void cargarDatosPersonales() {
         VBox contenido = new VBox(10);
