@@ -8,6 +8,8 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -96,7 +98,28 @@ public class VistaCliente extends Stage {
         TableColumn<AlbumDAO, Double> colCostoAlbum = new TableColumn<>("Costo");
         colCostoAlbum.setCellValueFactory(new PropertyValueFactory<>("costoAlbum"));
 
-        tblAlbumes.getColumns().addAll(colIdAlbum, colTituloAlbum, colFechaAlbum, colCostoAlbum);
+        // Columna para mostrar las imágenes
+        TableColumn<AlbumDAO, String> colImagenAlbum = new TableColumn<>("Imagen");
+        colImagenAlbum.setCellValueFactory(new PropertyValueFactory<>("imagenAlbum"));
+
+        colImagenAlbum.setCellFactory(col -> new TableCell<AlbumDAO, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    // Crear un ImageView con la ruta de la imagen
+                    Image image = new Image(item);
+                    ImageView imageView = new ImageView(image);
+                    imageView.setFitHeight(50); // Ajustar altura
+                    imageView.setFitWidth(50);  // Ajustar ancho
+                    setGraphic(imageView);     // Asignar el ImageView como gráfico de la celda
+                }
+            }
+        });
+
+        tblAlbumes.getColumns().addAll(colIdAlbum, colTituloAlbum, colFechaAlbum, colCostoAlbum, colImagenAlbum);
 
         // Cargar datos de álbumes
         AlbumDAO albumDAO = new AlbumDAO();
@@ -134,19 +157,12 @@ public class VistaCliente extends Stage {
         Button btnComprar = new Button("Comprar");
         btnComprar.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
         btnComprar.setOnAction(e -> {
-            // Aquí podrías obtener los ítems seleccionados y realizar la lógica de compra
-            // Por ejemplo, si el usuario selecciona un álbum o canción en la tabla correspondiente
-            // Podrías hacer algo como:
-            // AlbumDAO seleccionadoAlbum = tblAlbumes.getSelectionModel().getSelectedItem();
-            // CancionDAO seleccionadaCancion = tblCanciones.getSelectionModel().getSelectedItem();
-            // Implementar la lógica de compra según el caso
             mostrarAlerta("Compra", "Funcionalidad de compra en construcción.");
         });
 
         contenido.getChildren().addAll(lblTitulo, tabPane, btnComprar);
         contenidoPrincipal.setCenter(contenido);
     }
-
 
     private void cargarHistorialCompras() {
         VBox contenido = new VBox(10);
@@ -167,7 +183,9 @@ public class VistaCliente extends Stage {
         colTotal.setCellValueFactory(new PropertyValueFactory<>("totalVenta"));
 
         tblHistorial.getColumns().addAll(colIdVenta, colFecha, colTotal);
-        tblHistorial.setItems(new VentasDAO().SELECTALL());
+
+        // Cargar datos en la tabla filtrando por cliente actual
+        tblHistorial.setItems(new VentasDAO().SELECTBYCLIENTE(clienteActual.getIdCte()));
 
         contenido.getChildren().addAll(lblTitulo, tblHistorial);
         contenidoPrincipal.setCenter(contenido);
@@ -188,12 +206,7 @@ public class VistaCliente extends Stage {
         btnEditar.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
         btnEditar.setOnAction(e -> {
             FormCliente form = new FormCliente(null, clienteActual);
-            // Cuando se cierre el formulario, podemos actualizar los datos en la vista:
             form.setOnHidden(evt -> {
-                // Se asume que el clienteActual ya fue actualizado en la BD
-                // Recargamos datos desde la BD si se desea o simplemente refrescamos el contenido
-                // Si queremos volver a cargar la info actualizada:
-                // clienteActual = ClienteDAO.obtenerClientePorEmailYPassword(clienteActual.getEmailCte(), clienteActual.getPassword());
                 cargarDatosPersonales();
             });
         });
