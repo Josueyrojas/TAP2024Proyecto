@@ -380,4 +380,30 @@ public class VentasDAO {
             return ventas;
         }
     }
+
+    public ObservableList<VentasDAO> SELECTBYCLIENTE(int idCte) {
+        ObservableList<VentasDAO> listaVentas = FXCollections.observableArrayList();
+        String query = "SELECT * FROM tblVenta WHERE idCte = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, idCte);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    VentasDAO venta = new VentasDAO();
+                    venta.setIdVenta(rs.getInt("idVenta"));
+                    venta.setIdCliente(rs.getInt("idCte"));
+                    venta.setFechaVenta(rs.getString("fechaVenta"));
+                    // Si agregaste la columna totalVenta a la tabla tblVenta:
+                    venta.setTotalVenta(rs.getDouble("totalVenta"));
+                    listaVentas.add(venta);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener ventas del cliente:");
+            e.printStackTrace();
+        }
+        return listaVentas;
+    }
+
+
 }

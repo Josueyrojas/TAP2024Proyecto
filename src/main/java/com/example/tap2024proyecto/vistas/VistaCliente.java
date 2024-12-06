@@ -213,11 +213,14 @@ public class VistaCliente extends Stage {
         colTotal.setCellValueFactory(new PropertyValueFactory<>("totalVenta"));
 
         tblHistorial.getColumns().addAll(colIdVenta, colFecha, colTotal);
-        tblHistorial.setItems(new VentasDAO().SELECTALL());
+
+        // Cargar datos en la tabla filtrando por cliente actual
+        tblHistorial.setItems(new VentasDAO().SELECTBYCLIENTE(clienteActual.getIdCte()));
 
         contenido.getChildren().addAll(lblTitulo, tblHistorial);
         contenidoPrincipal.setCenter(contenido);
     }
+
 
     private void cargarDatosPersonales() {
         VBox contenido = new VBox(10);
