@@ -129,7 +129,7 @@ public class AlbumDAO {
         }
     }
 
-    // Ajustar el SELECTALL de AlbumDAO
+    // SELECT ALL
     public ObservableList<AlbumDAO> SELECTALL() {
         ObservableList<AlbumDAO> albumes = FXCollections.observableArrayList();
         String query = "SELECT idAlbum, tituloAlbum, fechaAlbum, costoAlbum, imagenAlbum FROM tblalbum"; // Incluye imagenAlbum
@@ -150,7 +150,7 @@ public class AlbumDAO {
             e.printStackTrace();
         }
         return albumes;
-    }
 
 
+}
 }

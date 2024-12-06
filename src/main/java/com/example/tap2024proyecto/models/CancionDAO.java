@@ -224,4 +224,30 @@ public class CancionDAO {
         }
         return false;
     }
+
+    public ObservableList<CancionDAO> obtenerCancionesDeAlbum(int idAlbum) {
+        ObservableList<CancionDAO> lista = FXCollections.observableArrayList();
+        String query = "SELECT * FROM tblCancion WHERE idAlbum = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, idAlbum);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                CancionDAO cancion = new CancionDAO(
+                        rs.getInt("idCancion"),
+                        rs.getString("tituloCan"),
+                        rs.getDouble("costoCan"),
+                        rs.getInt("idGenero"),
+                        rs.getInt("idAlbum"),
+                        rs.getInt("idArtista")
+                );
+                lista.add(cancion);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+
 }

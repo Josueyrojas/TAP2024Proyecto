@@ -31,8 +31,8 @@ public class VistaAdministrador extends Stage {
         // Botones de navegación
         Button btnCRUDAlbum = new Button("Gestionar Álbumes");
         Button btnCRUDCliente = new Button("Gestionar Clientes");
-        Button btnEstadisticas = new Button("Ver Estadísticas");
-        Button btnReportes = new Button("Generar Reportes");
+        //Button btnEstadisticas = new Button("Ver Estadísticas");
+        //Button btnReportes = new Button("Generar Reportes");
         Button btnGeneros = new Button("Gestionar Géneros");
         Button btnCanciones = new Button("Gestionar Canciones"); // Botón nuevo para gestionar canciones
         Button btnArtistas = new Button("Gestionar Artistas"); // Botón para gestionar artistas
@@ -42,8 +42,8 @@ public class VistaAdministrador extends Stage {
         String estiloBoton = "-fx-background-color: green; -fx-text-fill: white; -fx-cursor: hand;";
         btnCRUDAlbum.setStyle(estiloBoton);
         btnCRUDCliente.setStyle(estiloBoton);
-        btnEstadisticas.setStyle(estiloBoton);
-        btnReportes.setStyle(estiloBoton);
+        //btnEstadisticas.setStyle(estiloBoton);
+        //btnReportes.setStyle(estiloBoton);
         btnGeneros.setStyle(estiloBoton);
         btnCanciones.setStyle(estiloBoton); // Aplicamos el estilo común al nuevo botón
         btnArtistas.setStyle(estiloBoton); // Estilo para el botón de artistas
@@ -52,7 +52,7 @@ public class VistaAdministrador extends Stage {
         btnCerrarSesion.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-cursor: hand;");
 
         // Agregar los botones al menú lateral
-        menuLateral.getChildren().addAll(lblMenu, btnCRUDAlbum, btnCRUDCliente, btnEstadisticas, btnReportes, btnGeneros, btnCanciones, btnArtistas, btnCerrarSesion);
+        menuLateral.getChildren().addAll(lblMenu, btnCRUDAlbum, btnCRUDCliente, btnGeneros, btnCanciones, btnArtistas, btnCerrarSesion);
 
         // Área principal (contenido)
         contenidoPrincipal = new BorderPane();
@@ -72,8 +72,8 @@ public class VistaAdministrador extends Stage {
         // Acciones de los botones
         btnCRUDAlbum.setOnAction(e -> cargarListaAlbumes()); // Carga la lista de álbumes
         btnCRUDCliente.setOnAction(e -> cargarListaClientes()); // Carga la lista de clientes
-        btnEstadisticas.setOnAction(e -> new VistaEstadisticas()); // Placeholder para estadísticas
-        btnReportes.setOnAction(e -> contenidoPrincipal.setCenter(new Label("Generación de Reportes"))); // Placeholder para reportes
+        //btnEstadisticas.setOnAction(e -> new VistaEstadisticas()); // Placeholder para estadísticas
+        //btnReportes.setOnAction(e -> contenidoPrincipal.setCenter(new Label("Generación de Reportes"))); // Placeholder para reportes
         btnGeneros.setOnAction(e -> new ListaGeneros());
         btnCanciones.setOnAction(e -> cargarListaCanciones()); // Acción para el botón de gestionar canciones
         btnArtistas.setOnAction(e -> cargarListaArtistas()); // Acción para gestionar artistas
