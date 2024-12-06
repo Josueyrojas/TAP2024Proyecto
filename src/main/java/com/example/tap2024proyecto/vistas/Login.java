@@ -97,7 +97,7 @@ public class Login extends Stage {
         } else {
             lblError.setText("Invalid username or password.");
         }
-    }
+    }//
 
     private void abrirFormularioRegistro() {
         // Abrir el formulario para registrar un nuevo cliente
