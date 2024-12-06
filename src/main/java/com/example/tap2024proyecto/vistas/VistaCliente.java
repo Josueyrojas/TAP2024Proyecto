@@ -1,5 +1,7 @@
 package com.example.tap2024proyecto.vistas;
 
+import com.example.tap2024proyecto.models.AlbumDAO;
+import com.example.tap2024proyecto.models.CancionDAO;
 import com.example.tap2024proyecto.models.ClienteDAO;
 import com.example.tap2024proyecto.models.VentasDAO;
 import javafx.geometry.Insets;
@@ -66,22 +68,85 @@ public class VistaCliente extends Stage {
     }
 
     private void cargarVistaComprar() {
+        // Contenedor principal vertical
         VBox contenido = new VBox(10);
         contenido.setPadding(new Insets(10));
 
         Label lblTitulo = new Label("Comprar Canciones o Álbumes");
         lblTitulo.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
 
-        ListView<String> listaCompra = new ListView<>();
-        listaCompra.getItems().addAll("Canción 1", "Canción 2", "Álbum 1", "Álbum 2");
+        // Crear el TabPane
+        TabPane tabPane = new TabPane();
 
+        // Tab para Albums
+        Tab tabAlbumes = new Tab("Álbumes");
+        tabAlbumes.setClosable(false);
+
+        // Crear tabla para Albums
+        TableView<AlbumDAO> tblAlbumes = new TableView<>();
+        TableColumn<AlbumDAO, Integer> colIdAlbum = new TableColumn<>("ID");
+        colIdAlbum.setCellValueFactory(new PropertyValueFactory<>("idAlbum"));
+
+        TableColumn<AlbumDAO, String> colTituloAlbum = new TableColumn<>("Título");
+        colTituloAlbum.setCellValueFactory(new PropertyValueFactory<>("tituloAlbum"));
+
+        TableColumn<AlbumDAO, String> colFechaAlbum = new TableColumn<>("Fecha");
+        colFechaAlbum.setCellValueFactory(new PropertyValueFactory<>("fechaAlbum"));
+
+        TableColumn<AlbumDAO, Double> colCostoAlbum = new TableColumn<>("Costo");
+        colCostoAlbum.setCellValueFactory(new PropertyValueFactory<>("costoAlbum"));
+
+        tblAlbumes.getColumns().addAll(colIdAlbum, colTituloAlbum, colFechaAlbum, colCostoAlbum);
+
+        // Cargar datos de álbumes
+        AlbumDAO albumDAO = new AlbumDAO();
+        tblAlbumes.setItems(albumDAO.SELECTALL());
+
+        tabAlbumes.setContent(tblAlbumes);
+
+        // Tab para Canciones
+        Tab tabCanciones = new Tab("Canciones");
+        tabCanciones.setClosable(false);
+
+        // Crear tabla para Canciones
+        TableView<CancionDAO> tblCanciones = new TableView<>();
+        TableColumn<CancionDAO, Integer> colIdCancion = new TableColumn<>("ID");
+        colIdCancion.setCellValueFactory(new PropertyValueFactory<>("idCancion"));
+
+        TableColumn<CancionDAO, String> colTituloCancion = new TableColumn<>("Título");
+        colTituloCancion.setCellValueFactory(new PropertyValueFactory<>("tituloCan"));
+
+        TableColumn<CancionDAO, Double> colCostoCancion = new TableColumn<>("Costo");
+        colCostoCancion.setCellValueFactory(new PropertyValueFactory<>("costoCancion"));
+
+        tblCanciones.getColumns().addAll(colIdCancion, colTituloCancion, colCostoCancion);
+
+        // Cargar datos de canciones
+        CancionDAO cancionDAO = new CancionDAO();
+        tblCanciones.setItems(cancionDAO.SELECTALL());
+
+        tabCanciones.setContent(tblCanciones);
+
+        // Agregar las tabs al tabPane
+        tabPane.getTabs().addAll(tabAlbumes, tabCanciones);
+
+        // Botón para comprar (al seleccionar ítems)
         Button btnComprar = new Button("Comprar");
         btnComprar.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
-        btnComprar.setOnAction(e -> mostrarAlerta("Compra realizada", "Has comprado los artículos seleccionados."));
+        btnComprar.setOnAction(e -> {
+            // Aquí podrías obtener los ítems seleccionados y realizar la lógica de compra
+            // Por ejemplo, si el usuario selecciona un álbum o canción en la tabla correspondiente
+            // Podrías hacer algo como:
+            // AlbumDAO seleccionadoAlbum = tblAlbumes.getSelectionModel().getSelectedItem();
+            // CancionDAO seleccionadaCancion = tblCanciones.getSelectionModel().getSelectedItem();
+            // Implementar la lógica de compra según el caso
+            mostrarAlerta("Compra", "Funcionalidad de compra en construcción.");
+        });
 
-        contenido.getChildren().addAll(lblTitulo, listaCompra, btnComprar);
+        contenido.getChildren().addAll(lblTitulo, tabPane, btnComprar);
         contenidoPrincipal.setCenter(contenido);
     }
+
 
     private void cargarHistorialCompras() {
         VBox contenido = new VBox(10);

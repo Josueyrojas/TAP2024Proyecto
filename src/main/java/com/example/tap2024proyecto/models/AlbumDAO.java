@@ -129,19 +129,20 @@ public class AlbumDAO {
         }
     }
 
-    // SELECT ALL
+    // Ajustar el SELECTALL de AlbumDAO
     public ObservableList<AlbumDAO> SELECTALL() {
         ObservableList<AlbumDAO> albumes = FXCollections.observableArrayList();
-        try (Connection con = Conexion.getConnection()) {
-            String query = "SELECT idAlbum, tituloAlbum, fechaAlbum FROM albumes";
-            PreparedStatement pst = con.prepareStatement(query);
-            ResultSet rs = pst.executeQuery();
+        String query = "SELECT idAlbum, tituloAlbum, fechaAlbum, costoAlbum FROM tblalbum"; // Ajustamos la consulta
+        try (Connection con = Conexion.getConnection();
+             PreparedStatement pst = con.prepareStatement(query);
+             ResultSet rs = pst.executeQuery()) {
 
             while (rs.next()) {
                 AlbumDAO album = new AlbumDAO();
                 album.setIdAlbum(rs.getInt("idAlbum"));
                 album.setTituloAlbum(rs.getString("tituloAlbum"));
                 album.setFechaAlbum(rs.getString("fechaAlbum"));
+                album.setCostoAlbum(rs.getDouble("costoAlbum"));  // Obtener el costo del álbum
                 albumes.add(album);
             }
         } catch (SQLException e) {
@@ -149,4 +150,5 @@ public class AlbumDAO {
         }
         return albumes;
     }
+
 }
