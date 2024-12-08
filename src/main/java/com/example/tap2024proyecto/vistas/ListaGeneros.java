@@ -1,5 +1,6 @@
 package com.example.tap2024proyecto.vistas;
 
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -46,5 +47,9 @@ public class ListaGeneros extends Stage {
 
         tblGenero.getColumns().addAll(tbcNombre, tbcEditar, tbcEliminar);
         tblGenero.setItems(new GeneroDAO().SELECTALL());
+    }
+
+    public VBox getContenido() {
+        return vBox;
     }
 }

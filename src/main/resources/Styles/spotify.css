@@ -69,12 +69,12 @@
 /* Estilo para las celdas de la tabla con imágenes */
 .table-cell .image-view {
     -fx-background-color: transparent; /* Fondo transparente para imágenes */
-    -fx-alignment: center; /* Centrado de la imagen */
+    -fx-alignment: center;
 }
 
 /* Estilo para los botones dentro de las celdas de la tabla */
 .table-cell .button {
-    -fx-background-color: #1db954; /* Fondo verde */
+    -fx-background-color: limegreen; /* Fondo verde */
     -fx-text-fill: white; /* Texto blanco */
     -fx-font-size: 12px; /* Tamaño de fuente para el texto del botón */
     -fx-cursor: hand; /* Cursor tipo mano */
@@ -84,5 +84,5 @@
 
 /* Efecto hover para los botones de la tabla */
 .table-cell .button:hover {
-    -fx-background-color: #1a9e48; /* Verde más oscuro al pasar el ratón */
+    -fx-background-color: lightgray;
 }

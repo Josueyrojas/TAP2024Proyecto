@@ -30,7 +30,7 @@ public class VistaCliente extends Stage {
     private void crearUI() {
         VBox menuLateral = new VBox(10);
         menuLateral.setPadding(new Insets(10));
-        menuLateral.setStyle("-fx-background-color: #2A2A2A;");
+        menuLateral.setStyle("-fx-background-color: #2A2A2A;"); //Color negro que no es negro pero es un gris muy oscuro
 
         Label lblMenu = new Label("Menú del Cliente");
         lblMenu.setStyle("-fx-font-size: 16; -fx-text-fill: white; -fx-font-weight: bold;");
@@ -40,9 +40,9 @@ public class VistaCliente extends Stage {
         Button btnDatosPersonales = new Button("Mis Datos");
         Button btnCerrarSesion = new Button("Cerrar Sesion");
 
-        btnComprar.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
-        btnHistorial.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
-        btnDatosPersonales.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
+        btnComprar.setStyle("-fx-background-color: limegreen; -fx-text-fill: white; -fx-cursor: hand;");//color verde spotify o verde cyan
+        btnHistorial.setStyle("-fx-background-color: limegreen; -fx-text-fill: white; -fx-cursor: hand;");
+        btnDatosPersonales.setStyle("-fx-background-color: limegreen; -fx-text-fill: white; -fx-cursor: hand;");
         btnCerrarSesion.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-cursor: hand;");
 
         menuLateral.getChildren().addAll(lblMenu, btnComprar, btnHistorial, btnDatosPersonales, btnCerrarSesion);
@@ -70,21 +70,16 @@ public class VistaCliente extends Stage {
     }
 
     private void cargarVistaComprar() {
-        // Contenedor principal vertical
         VBox contenido = new VBox(10);
         contenido.setPadding(new Insets(10));
 
         Label lblTitulo = new Label("Comprar Canciones o Álbumes");
         lblTitulo.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
 
-        // Crear el TabPane
         TabPane tabPane = new TabPane();
-
-        // Tab para Albums
         Tab tabAlbumes = new Tab("Álbumes");
         tabAlbumes.setClosable(false);
 
-        // Crear tabla para Albums
         TableView<AlbumDAO> tblAlbumes = new TableView<>();
         TableColumn<AlbumDAO, Integer> colIdAlbum = new TableColumn<>("ID");
         colIdAlbum.setCellValueFactory(new PropertyValueFactory<>("idAlbum"));
@@ -98,10 +93,8 @@ public class VistaCliente extends Stage {
         TableColumn<AlbumDAO, Double> colCostoAlbum = new TableColumn<>("Costo");
         colCostoAlbum.setCellValueFactory(new PropertyValueFactory<>("costoAlbum"));
 
-        // Columna para mostrar las imágenes
         TableColumn<AlbumDAO, String> colImagenAlbum = new TableColumn<>("Imagen");
         colImagenAlbum.setCellValueFactory(new PropertyValueFactory<>("imagenAlbum"));
-
         colImagenAlbum.setCellFactory(col -> new TableCell<AlbumDAO, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -109,29 +102,25 @@ public class VistaCliente extends Stage {
                 if (empty || item == null) {
                     setGraphic(null);
                 } else {
-                    // Crear un ImageView con la ruta de la imagen
                     Image image = new Image(item);
                     ImageView imageView = new ImageView(image);
-                    imageView.setFitHeight(50); // Ajustar altura
-                    imageView.setFitWidth(50);  // Ajustar ancho
-                    setGraphic(imageView);     // Asignar el ImageView como gráfico de la celda
+                    imageView.setFitHeight(100);
+                    imageView.setFitWidth(100);
+                    setGraphic(imageView);
                 }
             }
         });
 
         tblAlbumes.getColumns().addAll(colIdAlbum, colTituloAlbum, colFechaAlbum, colCostoAlbum, colImagenAlbum);
 
-        // Cargar datos de álbumes
         AlbumDAO albumDAO = new AlbumDAO();
         tblAlbumes.setItems(albumDAO.SELECTALL());
 
         tabAlbumes.setContent(tblAlbumes);
 
-        // Tab para Canciones
         Tab tabCanciones = new Tab("Canciones");
         tabCanciones.setClosable(false);
 
-        // Crear tabla para Canciones
         TableView<CancionDAO> tblCanciones = new TableView<>();
         TableColumn<CancionDAO, Integer> colIdCancion = new TableColumn<>("ID");
         colIdCancion.setCellValueFactory(new PropertyValueFactory<>("idCancion"));
@@ -144,18 +133,21 @@ public class VistaCliente extends Stage {
 
         tblCanciones.getColumns().addAll(colIdCancion, colTituloCancion, colCostoCancion);
 
-        // Cargar datos de canciones
         CancionDAO cancionDAO = new CancionDAO();
         tblCanciones.setItems(cancionDAO.SELECTALL());
 
         tabCanciones.setContent(tblCanciones);
 
-        // Agregar las tabs al tabPane
         tabPane.getTabs().addAll(tabAlbumes, tabCanciones);
 
-        // Botón para comprar (al seleccionar ítems)
+        Button btnPdf= new Button("Generar PDF");
+        btnPdf.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-cursor: hand;");
+        btnPdf.setOnAction(e-> {
+            mostrarAlerta("PDF", "Funcionalidad en construcción");
+        });
+
         Button btnComprar = new Button("Comprar");
-        btnComprar.setStyle("-fx-background-color: #1DB954; -fx-text-fill: white; -fx-cursor: hand;");
+        btnComprar.setStyle("-fx-background-color: limegreen; -fx-text-fill: white; -fx-cursor: hand;");
         btnComprar.setOnAction(e -> {
             mostrarAlerta("Compra", "Funcionalidad de compra en construcción.");
         });
@@ -184,7 +176,6 @@ public class VistaCliente extends Stage {
 
         tblHistorial.getColumns().addAll(colIdVenta, colFecha, colTotal);
 
-        // Cargar datos en la tabla filtrando por cliente actual
         tblHistorial.setItems(new VentasDAO().SELECTBYCLIENTE(clienteActual.getIdCte()));
 
         contenido.getChildren().addAll(lblTitulo, tblHistorial);

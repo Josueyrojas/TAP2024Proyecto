@@ -323,12 +323,12 @@ public class VentasDAO {
     }
     public ObservableList<CancionesMasVendidas> obtenerCancionesMasVendidas() {
         ObservableList<CancionesMasVendidas> lista = FXCollections.observableArrayList();
-        String query = "SELECT c.tituloCancion, COUNT(dv.idVenta) AS ventas " +
+        String query = "SELECT c.tituloCan, COUNT(dv.idVenta) AS ventas " +
                 "FROM tblCancion c " +
                 "JOIN tblDetalleVenta dv ON c.idCancion = dv.idCancion " +
                 "JOIN tblVenta v ON dv.idVenta = v.idVenta " +
                 "WHERE DATE_FORMAT(v.fechaVenta, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') " +
-                "GROUP BY c.tituloCancion " +
+                "GROUP BY c.tituloCan " +
                 "ORDER BY ventas DESC " +
                 "LIMIT 10;";  // Limita la consulta a las 10 canciones más vendidas
 
@@ -338,7 +338,7 @@ public class VentasDAO {
 
             // Recorrer los resultados y agregarlos a la lista
             while (rs.next()) {
-                lista.add(new CancionesMasVendidas(rs.getString("tituloCancion"), rs.getInt("ventas")));
+                lista.add(new CancionesMasVendidas(rs.getString("tituloCan"), rs.getInt("ventas")));
             }
         } catch (SQLException e) {
             System.err.println("Error al obtener las canciones más vendidas:");

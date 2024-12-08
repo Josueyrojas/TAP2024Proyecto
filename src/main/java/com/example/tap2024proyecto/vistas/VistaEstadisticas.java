@@ -25,11 +25,6 @@ public class VistaEstadisticas extends Stage {
         graficaVentasMensuales.getData().add(serieMensuales);
 
         // Gráfica de Artistas con Más Ventas
-        PieChart graficaArtistas = new PieChart();
-        graficaArtistas.setTitle("Artistas con Más Ventas");
-        dao.obtenerArtistasConMasVentas().forEach(av ->
-                graficaArtistas.getData().add(new PieChart.Data(av.getArtista(), av.getVentas()))
-        );
 
         // Gráfica de Canciones Más Vendidas
         BarChart<String, Number> graficaCanciones = new BarChart<>(new CategoryAxis(), new NumberAxis());
@@ -41,7 +36,7 @@ public class VistaEstadisticas extends Stage {
         );
         graficaCanciones.getData().add(serieCanciones);
 
-        VBox vbox = new VBox(10, graficaVentasMensuales, graficaArtistas, graficaCanciones);
+        VBox vbox = new VBox(10, graficaVentasMensuales, graficaCanciones);
         Scene scene = new Scene(vbox, 800, 600);
 
         this.setTitle("Estadísticas de Ventas");

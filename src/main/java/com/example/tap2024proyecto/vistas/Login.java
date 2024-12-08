@@ -28,12 +28,10 @@ public class Login extends Stage {
     }
 
     private void CrearUI() {
-        // Imagen del logo de Spotify
         ImageView logo = new ImageView(new Image(getClass().getResource("/images/Spotify3.png").toExternalForm()));
         logo.setFitWidth(150); // Ajusta el ancho de la imagen
         logo.setPreserveRatio(true); // Mantén la proporción
 
-        // Campos de texto para usuario y contraseña
         txtUsername = new TextField();
         txtUsername.setPromptText("Username or Email");
         txtUsername.getStyleClass().add("input-field");
@@ -42,21 +40,17 @@ public class Login extends Stage {
         txtPassword.setPromptText("Password");
         txtPassword.getStyleClass().add("input-field");
 
-        // Botón de inicio de sesión
         btnLogin = new Button("Sign In");
         btnLogin.getStyleClass().add("sign-in-btn");
         btnLogin.setOnAction(event -> autenticarUsuario());
 
-        // Botón de registro
         btnRegister = new Button("Register");
         btnRegister.getStyleClass().add("sign-in-btn");
         btnRegister.setOnAction(event -> abrirFormularioRegistro());
 
-        // Label para mensajes de error
         lblError = new Label();
         lblError.getStyleClass().add("label");
 
-        // Diseño del VBox
         VBox vbox = new VBox(10, logo, txtUsername, txtPassword, btnLogin, btnRegister, lblError);
         vbox.setAlignment(Pos.CENTER);
         vbox.setStyle("-fx-background-color: black; -fx-padding: 20;");
@@ -73,18 +67,16 @@ public class Login extends Stage {
             return;
         }
 
-        // Verificar rol del usuario
         String rol = loginDAO.autenticar(username, password);
         if (rol != null) {
             switch (rol) {
                 case "administrador":
-                    new VistaAdministrador(); // Abre la vista de administrador
+                    new VistaAdministrador();
                     break;
                 case "cliente":
-                    // Obtener el cliente que se logueó
                     ClienteDAO cliente = ClienteDAO.obtenerClientePorEmailYPassword(username, password);
                     if (cliente != null) {
-                        new VistaCliente(cliente); // Abre la vista de cliente con el cliente logueado
+                        new VistaCliente(cliente);
                     } else {
                         lblError.setText("Error retrieving client data.");
                     }
@@ -93,15 +85,13 @@ public class Login extends Stage {
                     lblError.setText("Unknown role.");
                     return;
             }
-            this.close(); // Cierra la ventana de login
+            this.close();
         } else {
             lblError.setText("Invalid username or password.");
         }
     }
 
     private void abrirFormularioRegistro() {
-        // Abrir el formulario para registrar un nuevo cliente
-        // Como no le pasamos un ClienteDAO, se crea uno nuevo (agregar).
         new FormCliente(null, null);
     }
 }
