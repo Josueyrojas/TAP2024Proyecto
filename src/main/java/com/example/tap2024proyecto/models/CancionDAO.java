@@ -18,19 +18,19 @@ public class CancionDAO {
     private double costoCancion;
     private int idGenero;
     private int idAlbum;
-    private int idArtista; // Nueva propiedad para la clave foránea
+    private int idArtista;
 
-    // Constructor vacío
+
     public CancionDAO() {}
 
-    // Constructor con parámetros
+
     public CancionDAO(int idCancion, String tituloCan, double costoCancion, int idGenero, int idAlbum, int idArtista) {
         this.idCancion = idCancion;
         this.tituloCan = tituloCan;
         this.costoCancion = costoCancion;
         this.idGenero = idGenero;
         this.idAlbum = idAlbum;
-        this.idArtista = idArtista; // Inicializar la nueva propiedad
+        this.idArtista = idArtista;
     }
     public List<String> obtenerCancionesPorAlbum(int idAlbum) {
         List<String> canciones = new ArrayList<>();
@@ -49,7 +49,6 @@ public class CancionDAO {
         return canciones;
     }
 
-    // Getters y Setters
     public int getIdCancion() {
         return idCancion;
     }
@@ -98,12 +97,12 @@ public class CancionDAO {
         this.idArtista = idArtista;
     }
 
-    // Método para insertar una nueva canción
+
     public int INSERT() {
-        // Verificar si ya existe una canción con el mismo título
+
         if (cancionExiste()) {
             System.out.println("Error: Ya existe una canción con ese título.");
-            return 0; // No insertar si ya existe
+            return 0;
         }
 
         String query = "INSERT INTO tblCancion (tituloCan, costoCan, idGenero, idAlbum, idArtista) VALUES (?, ?, ?, ?, ?)";
@@ -122,9 +121,9 @@ public class CancionDAO {
         return 0;
     }
 
-    // Método para actualizar una canción existente
+
     public void UPDATE() {
-        // Verificar si ya existe otra canción con el mismo título pero con id distinto
+
         if (cancionExiste()) {
             System.out.println("Error: Ya existe una canción con ese título.");
             return;
@@ -146,7 +145,6 @@ public class CancionDAO {
         }
     }
 
-    // Método para verificar si una canción con el mismo título ya existe
     private boolean cancionExiste() {
         String query = "SELECT * FROM tblCancion WHERE tituloCan = ? AND idCancion != ?";
         try (Connection conn = Conexion.getConexion();
@@ -162,7 +160,7 @@ public class CancionDAO {
         return false;
     }
 
-    // Método para obtener todas las canciones
+
     public ObservableList<CancionDAO> SELECTALL() {
         ObservableList<CancionDAO> listaCanciones = FXCollections.observableArrayList();
         String query = "SELECT * FROM tblCancion";
@@ -187,7 +185,7 @@ public class CancionDAO {
         return listaCanciones;
     }
 
-    // Método para obtener una canción por su idCancion
+
     public static CancionDAO SELECTBYID(int idCancion) {
         String query = "SELECT * FROM tblCancion WHERE idCancion = ?";
         try (Connection conn = Conexion.getConexion();
@@ -208,10 +206,9 @@ public class CancionDAO {
             System.err.println("Error al obtener la canción por id: " + e.getMessage());
             e.printStackTrace();
         }
-        return null; // Retorna null si no existe la canción
+        return null;
     }
 
-    // Método para eliminar una canción
     public boolean DELETE() {
         String query = "DELETE FROM tblCancion WHERE idCancion = ?";
         try (Connection conn = Conexion.getConexion();

@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClienteDAO {
     private int idCte;
@@ -178,6 +180,28 @@ public class ClienteDAO {
             e.printStackTrace();
         }
         return cliente;
+    }
+
+    public Iterable<ClienteDAO> obtenerTodos() {
+        List<ClienteDAO> lista = new ArrayList<>();
+        String query = "SELECT * FROM tblcliente";
+
+        try {
+            Statement stmt = Conexion.connection.createStatement();
+            ResultSet res = stmt.executeQuery(query);
+
+            while (res.next()) {
+                ClienteDAO cliente = new ClienteDAO();
+                cliente.setIdCte(res.getInt("idCte"));
+                cliente.setNomCte(res.getString("nomCte"));
+                cliente.setEmailCte(res.getString("emailCte"));
+                cliente.setTelCte(res.getString("telCte"));
+                lista.add(cliente);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return lista;
     }
 }
 

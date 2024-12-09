@@ -23,7 +23,7 @@ public class VentasDAO {
         this.idVenta = idVenta;
     }
 
-    public int getIdCliente() {
+    public int getIdCte() {
         return idCliente;
     }
 
@@ -71,14 +71,13 @@ public class VentasDAO {
     }
 
     public int INSERT(int[] idsProductos) {
-        String queryVenta = "INSERT INTO tblVenta (idCliente, fechaVenta, totalVenta) VALUES (?, ?, ?)";
+        String queryVenta = "INSERT INTO tblVenta (idCte, fechaVenta, totalVenta) VALUES (?, ?, ?)";
         String queryDetalleVenta = "INSERT INTO tblDetalleVenta (idVenta, idCancion) VALUES (?, ?)";
 
         try (Connection conn = Conexion.getConexion();
              PreparedStatement stmtVenta = conn.prepareStatement(queryVenta, Statement.RETURN_GENERATED_KEYS)) {
 
-            // Insertar la venta
-            stmtVenta.setInt(1, this.getIdCliente());
+            stmtVenta.setInt(1, this.getIdCte());
             stmtVenta.setString(2, this.getFechaVenta());
             stmtVenta.setDouble(3, this.getTotalVenta());
 
@@ -89,26 +88,36 @@ public class VentasDAO {
                     if (generatedKeys.next()) {
                         int idVentaGenerada = generatedKeys.getInt(1);
 
-                        // Insertar los productos asociados a la venta
                         try (PreparedStatement stmtDetalle = conn.prepareStatement(queryDetalleVenta)) {
                             for (int idProducto : idsProductos) {
                                 stmtDetalle.setInt(1, idVentaGenerada);
                                 stmtDetalle.setInt(2, idProducto);
-                                stmtDetalle.addBatch();
+
+                                // Validar existencia del idCancion antes de insertarlo
+                                String queryValidarCancion = "SELECT idCancion FROM tblCancion WHERE idCancion = ?";
+                                try (PreparedStatement stmtValidar = conn.prepareStatement(queryValidarCancion)) {
+                                    stmtValidar.setInt(1, idProducto);
+                                    try (ResultSet rs = stmtValidar.executeQuery()) {
+                                        if (rs.next()) {
+                                            stmtDetalle.addBatch();
+                                        } else {
+                                            System.err.println("Error: idCancion no existe en la base de datos: " + idProducto);
+                                        }
+                                    }
+                                }
                             }
                             stmtDetalle.executeBatch();
                         }
-                        return 1; // Venta y productos insertados correctamente
+                        return 1;
                     }
                 }
             }
-
         } catch (SQLException e) {
             System.err.println("Error al insertar la venta:");
             e.printStackTrace();
         }
 
-        return 0; // Error al insertar la venta
+        return 0;
     }
 
     public int UPDATE(int[] idItems) {
@@ -298,13 +307,13 @@ public class VentasDAO {
     // Método para obtener los artistas con más ventas
     public ObservableList<ArtistasVentas> obtenerArtistasConMasVentas() {
         ObservableList<ArtistasVentas> lista = FXCollections.observableArrayList();
-        String query = "SELECT a.nombreArtista, COUNT(dv.idVenta) AS ventas " +
+        String query = "SELECT a.nombreArt, COUNT(dv.idVenta) AS ventas " +
                 "FROM tblArtista a " +
                 "JOIN tblCancion c ON a.idArtista = c.idArtista " +
                 "JOIN tblDetalleVenta dv ON c.idCancion = dv.idCancion " +
                 "JOIN tblVenta v ON dv.idVenta = v.idVenta " +
                 "WHERE DATE_FORMAT(v.fechaVenta, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') " +
-                "GROUP BY a.nombreArtista " +
+                "GROUP BY a.nombreArt " +
                 "ORDER BY ventas DESC " +
                 "LIMIT 10;";  // Limita la consulta a los 10 artistas más vendidos
 
@@ -345,6 +354,10 @@ public class VentasDAO {
             e.printStackTrace();
         }
         return lista;
+    }
+
+    public double getCantidad() {
+        return totalVenta;
     }
 
 

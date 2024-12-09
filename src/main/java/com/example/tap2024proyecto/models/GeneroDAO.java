@@ -3,16 +3,14 @@ package com.example.tap2024proyecto.models;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GeneroDAO {
     private int idGenero;
     private String nombreGenero;
 
-    // Getters y Setters
     public int getIdGenero() {
         return idGenero;
     }
@@ -29,13 +27,13 @@ public class GeneroDAO {
         this.nombreGenero = nombreGenero;
     }
     public String toString() {
-        return nombreGenero; // Devuelve el nombre del género
+        return nombreGenero;
     }
 
     // Método para insertar un género
     public int INSERT() {
         int rowCount;
-        String query = "INSERT INTO tblGenero(nombreGen) VALUES (?)"; // Cambio: nombreGen
+        String query = "INSERT INTO tblGenero(nombreGen) VALUES (?)";
         try (Connection conn = Conexion.getConexion();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
@@ -52,7 +50,7 @@ public class GeneroDAO {
 
     // Método para actualizar un género
     public void UPDATE() {
-        String query = "UPDATE tblGenero SET nombreGen = ? WHERE idGenero = ?"; // Cambio: nombreGen
+        String query = "UPDATE tblGenero SET nombreGen = ? WHERE idGenero = ?";
         try (Connection conn = Conexion.getConexion();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
@@ -93,7 +91,7 @@ public class GeneroDAO {
             while (rs.next()) {
                 GeneroDAO genero = new GeneroDAO();
                 genero.setIdGenero(rs.getInt("idGenero"));
-                genero.setNombreGenero(rs.getString("nombreGen")); // Cambio: nombreGen
+                genero.setNombreGenero(rs.getString("nombreGen"));
                 listaGeneros.add(genero);
             }
             System.out.println("Géneros cargados: " + listaGeneros.size());
@@ -103,4 +101,26 @@ public class GeneroDAO {
         }
         return listaGeneros;
     }
+
+    public Iterable<GeneroDAO> obtenerTodos() {
+        List<GeneroDAO> listaGeneros = new ArrayList<>();
+        String query = "SELECT * FROM tblgenero";
+
+        try {
+            Statement stmt = Conexion.connection.createStatement();
+            ResultSet res = stmt.executeQuery(query);
+
+            while (res.next()) {
+                GeneroDAO genero = new GeneroDAO();
+                genero.setIdGenero(res.getInt("idGenero"));
+                genero.setNombreGenero(res.getString("nombreGen"));
+                listaGeneros.add(genero);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return listaGeneros;
+    }
+
 }

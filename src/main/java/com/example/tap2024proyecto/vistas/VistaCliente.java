@@ -1,9 +1,8 @@
 package com.example.tap2024proyecto.vistas;
 
-import com.example.tap2024proyecto.models.AlbumDAO;
-import com.example.tap2024proyecto.models.CancionDAO;
-import com.example.tap2024proyecto.models.ClienteDAO;
-import com.example.tap2024proyecto.models.VentasDAO;
+import com.example.tap2024proyecto.components.PDFGenerator;
+import com.example.tap2024proyecto.models.*;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -13,6 +12,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class VistaCliente extends Stage {
     private Scene scene;
@@ -140,20 +142,84 @@ public class VistaCliente extends Stage {
 
         tabPane.getTabs().addAll(tabAlbumes, tabCanciones);
 
-        Button btnPdf= new Button("Generar PDF");
+        // Botón para generar PDF del recibo de compra
+        Button btnPdf = new Button("Generar PDF");
         btnPdf.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-cursor: hand;");
-        btnPdf.setOnAction(e-> {
-            mostrarAlerta("PDF", "Funcionalidad en construcción");
-        });
+        btnPdf.setOnAction(e -> generarReciboPDF());
 
         Button btnComprar = new Button("Comprar");
         btnComprar.setStyle("-fx-background-color: limegreen; -fx-text-fill: white; -fx-cursor: hand;");
         btnComprar.setOnAction(e -> {
-            mostrarAlerta("Compra", "Funcionalidad de compra en construcción.");
+            // Obtener los álbumes seleccionados
+            ObservableList<AlbumDAO> albumesSeleccionados = tblAlbumes.getSelectionModel().getSelectedItems();
+            ObservableList<CancionDAO> cancionesSeleccionadas = tblCanciones.getSelectionModel().getSelectedItems();
+
+            if (albumesSeleccionados.isEmpty() && cancionesSeleccionadas.isEmpty()) {
+                mostrarAlerta("Error", "Debe seleccionar al menos un álbum o canción para realizar la compra.");
+                return;
+            }
+
+            // Calcular el total de la compra
+            double total = 0;
+            int[] idsProductos = new int[albumesSeleccionados.size() + cancionesSeleccionadas.size()];
+            List<String> productos = new ArrayList<>();
+            int index = 0;
+
+            for (AlbumDAO album : albumesSeleccionados) {
+                total += album.getCostoAlbum();
+                productos.add(album.getTituloAlbum() + " - 1 - $" + album.getCostoAlbum());
+                idsProductos[index++] = album.getIdAlbum();
+            }
+
+            for (CancionDAO cancion : cancionesSeleccionadas) {
+                total += cancion.getCostoCancion();
+                productos.add(cancion.getTituloCan() + " - 1 - $" + cancion.getCostoCancion());
+                idsProductos[index++] = cancion.getIdCancion();
+            }
+
+            // Crear la venta y guardarla en la base de datos
+            VentasDAO venta = new VentasDAO();
+            venta.setIdCliente(clienteActual.getIdCte());
+            venta.setFechaVenta(java.time.LocalDate.now().toString());
+            venta.setTotalVenta(total);
+
+            int resultado = venta.INSERT(idsProductos);
+            if (resultado > 0) {
+                mostrarAlerta("Compra realizada", "La compra se ha realizado con éxito. Total: $" + total);
+
+                // Generar el recibo de compra en PDF
+                PDFGenerator.generarReciboCompra(clienteActual.getNomCte(), productos, total, this);
+            } else {
+                mostrarAlerta("Error", "No se pudo realizar la compra. Intente nuevamente.");
+            }
         });
 
-        contenido.getChildren().addAll(lblTitulo, tabPane, btnComprar);
+
+
+        contenido.getChildren().addAll(lblTitulo, tabPane, btnComprar, btnPdf);
         contenidoPrincipal.setCenter(contenido);
+    }
+
+    private void generarReciboPDF() {
+        // Obtener las compras realizadas por el cliente desde la base de datos
+        List<VentasDAO> ventas = new VentasDAO().SELECTBYCLIENTE(clienteActual.getIdCte());
+
+        List<String> productosComprados = new java.util.ArrayList<>();
+        double total = 0;
+
+        for (VentasDAO venta : ventas) {
+            List<VentasDAO> detalles = new VentasDAO().SELECTBYCLIENTE(venta.getIdVenta());
+            for (VentasDAO detalle : detalles) {
+                AlbumDAO album = new AlbumDAO();
+                if (album != null) {
+                    productosComprados.add(album.getTituloAlbum() + " - " + detalle.getCantidad() + " - $" + album.getCostoAlbum());
+                    total += album.getCostoAlbum() * detalle.getCantidad();
+                }
+            }
+        }
+
+        // Generar el PDF con los productos comprados y el total
+        PDFGenerator.generarReciboCompra(clienteActual.getNomCte(), productosComprados, total, this);
     }
 
     private void cargarHistorialCompras() {

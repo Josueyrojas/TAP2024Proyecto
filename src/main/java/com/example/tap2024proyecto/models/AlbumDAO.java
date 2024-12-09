@@ -4,6 +4,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AlbumDAO {
     private int idAlbum;
@@ -152,5 +154,28 @@ public class AlbumDAO {
         return albumes;
 
 
-}
+    }
+    public Iterable<AlbumDAO> obtenerTodos() {
+        List<AlbumDAO> lista = new ArrayList<>();
+        String query = "SELECT * FROM tblalbum";
+
+        try {
+            Statement stmt = Conexion.connection.createStatement();
+            ResultSet res = stmt.executeQuery(query);
+
+            while (res.next()) {
+                AlbumDAO album = new AlbumDAO();
+                album.setIdAlbum(res.getInt("idAlbum"));
+                album.setTituloAlbum(res.getString("tituloAlbum"));
+               // album.setFechaAlbum(String.valueOf(res.getInt("fechaAlbum")));
+               // album.setCostoAlbum(res.getInt("costoAlbum"));
+                lista.add(album);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+
 }

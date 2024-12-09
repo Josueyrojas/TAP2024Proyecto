@@ -26,7 +26,7 @@ public class FormVenta extends Stage {
 
         if (venta != null) {
             this.objVenta = venta;
-            cmbCliente.getSelectionModel().select(findCliente(objVenta.getIdCliente()));
+            cmbCliente.getSelectionModel().select(findCliente(objVenta.getIdCte()));
             txtFechaVenta.setText(objVenta.getFechaVenta());
             txtTotalVenta.setText(String.valueOf(objVenta.getTotalVenta()));
             this.setTitle("Editar Venta");

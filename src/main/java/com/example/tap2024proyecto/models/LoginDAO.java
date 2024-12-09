@@ -24,7 +24,6 @@ public class LoginDAO {
         String rol = null;
 
         try (Connection connection = getConnection()) {
-            // Verificar en la tabla administradores
             String queryAdmin = "SELECT * FROM administradores WHERE username = ? AND password = ?";
             try (PreparedStatement stmtAdmin = connection.prepareStatement(queryAdmin)) {
                 stmtAdmin.setString(1, username);
@@ -33,11 +32,10 @@ public class LoginDAO {
                 ResultSet rsAdmin = stmtAdmin.executeQuery();
                 if (rsAdmin.next()) {
                     rol = "administrador";
-                    return rol; // Si es administrador, no verificamos más
+                    return rol;
                 }
             }
 
-            // Verificar en la tabla tblcliente
             ClienteDAO cliente = ClienteDAO.obtenerClientePorEmailYPassword(username, password);
             if (cliente != null) {
                 rol = "cliente";
